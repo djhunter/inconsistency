@@ -5,13 +5,40 @@ inconsistency <- function(A,B) {
   Iab <- 1/(length(A)*length(B))*sum(diffs[diffs>0])
   return(Iab/(mean(B)-mean(A)))
 }
+gameIDs <- "gid_2017_08_12_chnmlb_arimlb_1"
 
-# gameID <- "gid_2017_08_20_miamlb_nynmlb_1"
-gameID <- "gid_2017_08_12_chnmlb_arimlb_1"
-#gamedata <- scrape(game.ids = "gid_2017_08_16_cinmlb_chnmlb_1")
-#gamedata <- scrape(game.ids = "gid_2017_08_15_cinmlb_chnmlb_1")
-#gamedata <- scrape(game.ids = "gid_2017_08_12_chnmlb_arimlb_1")
-#gamedata <- scrape(game.ids= "gid_2017_08_20_miamlb_nynmlb_1")
+makeInconsistencyDF <- function(gameIDs) 
+{
+  n <- length(gameIDs)
+  outDF <- data.frame(ump = character(n), 
+                      gid = gameIDs,
+                      lhOut = numeric(n), 
+                      lhIn = numeric(n), 
+                      rhOut = numeric(n), 
+                      rhIn = numeric(n),
+                      up = numeric(n),
+                      down = numeric(n),
+                      stringsAsFactors = FALSE)
+  # TODO continue here
+  
+  for (i in 1:n) {
+    playerdata <- scrape(game.ids=gameIDs[i], suffix="players.xml")
+    outDF <- playerdata$umpire[playerdata$umpire$position=="home", "name"]
+    gamedata <- scrape(game.ids=gameID)
+    pitchdata <- gamedata$pitch # all pitches
+    
+  }
+  
+  
+}
+for(i in gameIDs) {
+  playerdata <- scrape(game.ids=gameID, suffix="players.xml")
+  umpName <- playerdata$umpire[playerdata$umpire$position=="home", "name"]
+  gamedata <- scrape(game.ids=gameID)
+  pitchdata <- gamedata$pitch # all pitches
+  
+}
+
 playerdata <- scrape(game.ids=gameID, suffix="players.xml")
 umpName <- playerdata$umpire[playerdata$umpire$position=="home", "name"]
 gamedata <- scrape(game.ids=gameID)
