@@ -1,5 +1,7 @@
 library("pitchRx")
 inconsistency <- function(A,B) {
+  if (length(A) == 0 | length(B) == 0)
+    return(0)
   pairs <- expand.grid(A,B)
   diffs <- pairs[,1]-pairs[,2]
   Iab <- 1/(length(A)*length(B))*sum(diffs[diffs>0])
@@ -7,7 +9,9 @@ inconsistency <- function(A,B) {
 }
 
 # gameID <- "gid_2017_08_20_miamlb_nynmlb_1"
-gameID <- "gid_2017_08_12_chnmlb_arimlb_1"
+# gameID <- "gid_2017_08_12_chnmlb_arimlb_1"
+#gameID <- "gid_2017_07_01_bosmlb_tormlb_1"
+gameID <- "gid_2017_07_04_anamlb_minmlb_1"
 #gamedata <- scrape(game.ids = "gid_2017_08_16_cinmlb_chnmlb_1")
 #gamedata <- scrape(game.ids = "gid_2017_08_15_cinmlb_chnmlb_1")
 #gamedata <- scrape(game.ids = "gid_2017_08_12_chnmlb_arimlb_1")
