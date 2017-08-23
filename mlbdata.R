@@ -11,7 +11,8 @@ inconsistency <- function(A,B) {
 # gameID <- "gid_2017_08_20_miamlb_nynmlb_1"
 # gameID <- "gid_2017_08_12_chnmlb_arimlb_1"
 #gameID <- "gid_2017_07_01_bosmlb_tormlb_1"
-gameID <- "gid_2017_07_04_anamlb_minmlb_1"
+#gameID <- "gid_2017_07_04_anamlb_minmlb_1"
+gameID <- "gid_2017_07_05_nynmlb_wasmlb_1"
 #gamedata <- scrape(game.ids = "gid_2017_08_16_cinmlb_chnmlb_1")
 #gamedata <- scrape(game.ids = "gid_2017_08_15_cinmlb_chnmlb_1")
 #gamedata <- scrape(game.ids = "gid_2017_08_12_chnmlb_arimlb_1")
