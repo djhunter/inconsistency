@@ -15,6 +15,8 @@ umpID <- playerdata$umpire[playerdata$umpire$position=="home", "id"]
 
 gamedata <- scrape(game.ids=gameID)
 pitchdata <- gamedata$pitch # all pitches
+# normalize up/down locations based on height of batter
+pitchdata$pz <- 2.0*(pitchdata$pz-pitchdata$sz_top)/(pitchdata$sz_top-pitchdata$sz_bot)+3.5
 atbatdata <- gamedata$atbat
 numL <- atbatdata[atbatdata$stand=="L","num"]
 numR <- atbatdata[atbatdata$stand=="R","num"]
@@ -29,7 +31,7 @@ Rballs <- Rballs[!is.na(Rballs[,1]),]
 Lstrikes <- Lstrikes[!is.na(Lstrikes[,1]),]
 Rstrikes <- Rstrikes[!is.na(Rstrikes[,1]),]
 
-plot(Rballs,xlim=c(-4,4),ylim=c(0,6))
+plot(Rballs,xlim=c(-4,4),ylim=c(0,6), asp=1)
 title(main=paste(c(umpName, gameID, " vs. Right-handed batters")))
 points(Rstrikes,col="red",pch=5)
 RstrikeHull <- ahull(Rstrikes, alpha=10000) # equals convex hull (approx)
