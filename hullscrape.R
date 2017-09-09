@@ -26,57 +26,55 @@ makeHullDF <- function(gameIDs)
     outDF[i,"umpID"] <- playerdata$umpire[playerdata$umpire$position=="home", "id"]
     gamedata <- scrape(game.ids=gameIDs[i])
     pitchdata <- gamedata$pitch # all pitches
+    # normalize up/down locations based on height of batter
+    if(!is.null(pitchdata$pz)) {
+    pitchdata$pz <- 2.0*(pitchdata$pz-pitchdata$sz_top)/(pitchdata$sz_top-pitchdata$sz_bot)+3.5
     atbatdata <- gamedata$atbat
     numL <- atbatdata[atbatdata$stand=="L","num"]
     numR <- atbatdata[atbatdata$stand=="R","num"]
     Lpitchdata <- pitchdata[pitchdata$num %in% numL,]
     Rpitchdata <- pitchdata[pitchdata$num %in% numR,]
-    #check calls vs. LH batters TODO: continue here
-    umpZoneTop <- quantile(Lpitchdata[Lpitchdata$des=="Called Strike","pz"],0.95,na.rm = TRUE)
-    umpZoneBot <- quantile(Lpitchdata[Lpitchdata$des=="Called Strike","pz"],0.05,na.rm = TRUE)
-    pitchSample <- Lpitchdata[which((Lpitchdata$px>0)
-                               &(Lpitchdata$pz>umpZoneBot)
-                               &(Lpitchdata$pz<umpZoneTop)),]
-    ballsX <- pitchSample[pitchSample$des=="Ball", "px"]
-    strikesX <- pitchSample[pitchSample$des=="Called Strike", "px"]
-    outDF[i,"lhOut"] <- inconsistency(strikesX, ballsX)
-    pitchSample <- Lpitchdata[which((Lpitchdata$px<0)
-                               &(Lpitchdata$pz>umpZoneBot)
-                               &(Lpitchdata$pz<umpZoneTop)),]
-    ballsX <- pitchSample[pitchSample$des=="Ball", "px"]
-    strikesX <- pitchSample[pitchSample$des=="Called Strike", "px"]
-    outDF[i,"lhIn"] <- inconsistency(ballsX, strikesX)
-    #check calls vs. RH batters
-    umpZoneTop <- quantile(Rpitchdata[Rpitchdata$des=="Called Strike","pz"],0.95,na.rm = TRUE)
-    umpZoneBot <- quantile(Rpitchdata[Rpitchdata$des=="Called Strike","pz"],0.05,na.rm = TRUE)
-    pitchSample <- Rpitchdata[which((Rpitchdata$px>0)
-                               &(Rpitchdata$pz>umpZoneBot)
-                               &(Rpitchdata$pz<umpZoneTop)),]
-    ballsX <- pitchSample[pitchSample$des=="Ball", "px"]
-    strikesX <- pitchSample[pitchSample$des=="Called Strike", "px"]
-    outDF[i,"rhOut"] <- inconsistency(strikesX, ballsX)
-    pitchSample <- Rpitchdata[which((Rpitchdata$px<0)
-                               &(Rpitchdata$pz>umpZoneBot)
-                               &(Rpitchdata$pz<umpZoneTop)),]
-    ballsX <- pitchSample[pitchSample$des=="Ball", "px"]
-    strikesX <- pitchSample[pitchSample$des=="Called Strike", "px"]
-    outDF[i,"rhIn"] <- inconsistency(ballsX, strikesX)
-    outDF[i,"total"] <- sum(outDF[i,3:6]) }
+    Lballs <- Lpitchdata[Lpitchdata$des=="Ball",c("px","pz")]
+    Lstrikes <- Lpitchdata[Lpitchdata$des=="Called Strike",c("px","pz")]
+    Rballs <- Rpitchdata[Rpitchdata$des=="Ball",c("px","pz")]
+    Rstrikes <- Rpitchdata[Rpitchdata$des=="Called Strike",c("px","pz")]
+    Lballs <- Lballs[!is.na(Lballs[,1]),]
+    Rballs <- Rballs[!is.na(Rballs[,1]),]
+    Lstrikes <- Lstrikes[!is.na(Lstrikes[,1]),]
+    Rstrikes <- Rstrikes[!is.na(Rstrikes[,1]),]
+    RstrikeHull <- ahull(Rstrikes, alpha=10000) # equals convex hull (approx)
+    alpha = 0.6 # could pass as parameter: bigger seems less fair to umpires
+    RballHull <- ahull(Rballs, alpha=alpha)
+    LstrikeHull <- ahull(Lstrikes, alpha=10000) # equals convex hull (approx)
+    LballHull <- ahull(Lballs, alpha=alpha)
+    totalCalls <- nrow(Lstrikes)+nrow(Lballs)+nrow(Rstrikes)+nrow(Rballs)
+    badRballs <- sum(inahull(RstrikeHull, matrix(unlist(Rballs), ncol=2, byrow=FALSE)))
+    badRstrikes <- sum(inahull(RballHull, matrix(unlist(Rstrikes), ncol=2, byrow=FALSE)))
+    badLballs <- sum(inahull(LstrikeHull, matrix(unlist(Lballs), ncol=2, byrow=FALSE)))
+    badLstrikes <- sum(inahull(LballHull, matrix(unlist(Lstrikes), ncol=2, byrow=FALSE)))
+    outDF[i,"lhCSinBallHull"] <- badLstrikes
+    outDF[i,"lhCBinStrikeHull"] <- badLballs
+    outDF[i,"rhCSinBallHull"] <- badRstrikes
+    outDF[i,"rhCBinStrikeHull"] <- badRballs
+    outDF[i,"totalCalls"] <- totalCalls
+    outDF[i,"inconIdx"] <- (badLballs+badLstrikes+badRballs+badRstrikes)/totalCalls
+    } }
   }
   return(outDF)
 }
 
 library(RCurl)
-july2017games <- makeUrls("2017-04-01", "2017-08-22")
-for(u in july2017games) {
+games <- makeUrls("2017-04-01", "2017-07-31")
+for(u in games) {
   if (!url.exists(paste0(u,"/inning")))
-    july2017games <- setdiff(july2017games, u)
+    games <- setdiff(games, u)
 }
 
-july2017gids <- substr(july2017games, 66, 95)
+gids <- substr(games, 66, 95)
+#gids <- "gid_2017_07_01_bosmlb_tormlb_1"
 #badgids <- c("gid_2017_07_05_nynmlb_wasmlb_1","gid_2017_04_03_detmlb_chamlb_1")
 #badgids <- c("gid_2017_04_05_kcamlb_minmlb_1")
 #july2017gids <- setdiff(july2017gids, badgids)
-july2017umps <- makeInconsistencyDF(july2017gids)
+umpDF <- makeHullDF(gids)
 
 
