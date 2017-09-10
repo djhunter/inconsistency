@@ -5,12 +5,14 @@ library(geometry)
 #gameID <- "gid_2017_08_12_chnmlb_arimlb_1"
 #gameID <- "gid_2017_08_20_miamlb_nynmlb_1"
 # gameID <- "gid_2017_08_12_chnmlb_arimlb_1" # not great game
-#gameID <- "gid_2017_07_01_bosmlb_tormlb_1" # well-called game
+gameID <- "gid_2017_07_01_bosmlb_tormlb_1" # well-called game
 #gameID <- "gid_2017_07_04_anamlb_minmlb_1"
 #gameID <- "gid_2017_07_05_nynmlb_wasmlb_1" #broken
 #gameID <- "gid_2017_08_10_kcamlb_slnmlb_1"
 #gameID <- "gid_2017_04_20_wasmlb_atlmlb_1" # only 30 calls
-gameID <- "gid_2017_06_04_chamlb_detmlb_1" # worst game by metric
+#gameID <- "gid_2017_06_04_chamlb_detmlb_1" # worst game by metric
+#gameID <- "gid_2017_04_14_pitmlb_chnmlb_1" # balanced on each side
+#gameID <- "gid_2017_05_12_cinmlb_sfnmlb_1"
 playerdata <- scrape(game.ids=gameID, suffix="players.xml")
 umpName <- playerdata$umpire[playerdata$umpire$position=="home", "name"]
 umpID <- playerdata$umpire[playerdata$umpire$position=="home", "id"]
@@ -37,7 +39,9 @@ Rstrikes <- Rstrikes[!is.na(Rstrikes[,1]),]
 ballsize=1.5
 transp=0.4
 plot(Rballs,xlim=c(-4,4),ylim=c(0,6), asp=1, col=alpha("black", transp), pch=19, cex=ballsize)
+#plot(Rstrikes,xlim=c(-4,4),ylim=c(0,6), asp=1, col=alpha("red", transp), pch=19, cex=ballsize)
 title(main=paste(c(umpName, gameID, " vs. right-handed batters")))
+#title(main=paste(c(gameID, " vs. right-handed batters")))
 #points(Rstrikes,col="red",pch=5)
 points(Rstrikes, col=alpha("red", transp), pch=19, cex=ballsize)
 
@@ -68,6 +72,7 @@ plot(RballHull, add=TRUE, wpoints=FALSE, col=c(4,0,0,0,0,0))
 #plot(Lballs,xlim=c(-4,4),ylim=c(0,6))
 plot(Lballs,xlim=c(-4,4),ylim=c(0,6), asp=1, col=alpha("black", transp), pch=19, cex=ballsize)
 title(main=paste(c(umpName, gameID, " vs. left-handed batters")))
+#title(main=paste(c(gameID, " vs. left-handed batters")))
 #points(Lstrikes,col="red",pch=5)
 points(Lstrikes, col=alpha("red", transp), pch=19, cex=ballsize)
 LstrikeHull <- ahull(Lstrikes, alpha=10000) # equals convex hull (approx)
