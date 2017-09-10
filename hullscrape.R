@@ -77,7 +77,7 @@ gids <- substr(games, 66, 95)
 #july2017gids <- setdiff(july2017gids, badgids)
 umpDF <- makeHullDF(gids)
 
-umpDF <- umpDF[umpDF$totalCalls>0,]
+umpDF <- umpDF[umpDF$totalCalls>50,] # eliminate small samples
 uumpids <- unique(umpDF$umpID)
 umpAveIncon <- data.frame(ID = uumpids, name=character(length(uumpids)), 
                           aveincon = numeric(length(uumpids)),
