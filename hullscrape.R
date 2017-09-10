@@ -77,4 +77,15 @@ gids <- substr(games, 66, 95)
 #july2017gids <- setdiff(july2017gids, badgids)
 umpDF <- makeHullDF(gids)
 
+umpDF <- umpDF[umpDF$totalCalls>0,]
+uumpids <- unique(umpDF$umpID)
+umpAveIncon <- data.frame(ID = uumpids, name=character(length(uumpids)), 
+                          aveincon = numeric(length(uumpids)),
+                          stringsAsFactors = FALSE)
+for (i in 1:length(uumpids)) {
+  umpAveIncon[i,"aveincon"] = mean(umpDF[umpDF$umpID==uumpids[i], "inconIdx" ], na.rm=TRUE)
+  umpAveIncon[i,"name"] = umpDF[umpDF$umpID==uumpids[i],"umpName"][1]
+}
+sortedumps <- umpAveIncon[order(umpAveIncon$aveincon),]
+print(sortedumps[,c("name","aveincon")], row.names = FALSE, right=FALSE)
 
