@@ -1,4 +1,5 @@
 library("pitchRx")
+library("alphahull")
 
 makeHullDF <- function(gameIDs) 
 {
@@ -42,11 +43,12 @@ makeHullDF <- function(gameIDs)
     Rballs <- Rballs[!is.na(Rballs[,1]),]
     Lstrikes <- Lstrikes[!is.na(Lstrikes[,1]),]
     Rstrikes <- Rstrikes[!is.na(Rstrikes[,1]),]
-    RstrikeHull <- ahull(Rstrikes, alpha=10000) # equals convex hull (approx)
+    emptyhull <- ahull(c(-100, -101, -100), c(0,0,1), alpha=10000) # kludge: not really empty but no data will ever be in it
+    if (nrow(Rstrikes)>2) RstrikeHull <- ahull(Rstrikes, alpha=10000) else RstrikeHull <- emptyhull
+    if (nrow(Lstrikes)>2) LstrikeHull <- ahull(Lstrikes, alpha=10000) else LstrikeHull <- emptyhull
     alpha = 0.6 # could pass as parameter: bigger seems less fair to umpires
-    RballHull <- ahull(Rballs, alpha=alpha)
-    LstrikeHull <- ahull(Lstrikes, alpha=10000) # equals convex hull (approx)
-    LballHull <- ahull(Lballs, alpha=alpha)
+    if (nrow(Rballs)>2) RballHull <- ahull(Rballs, alpha=alpha) else RballHull <- emptyhull
+    if (nrow(Lballs)>2) LballHull <- ahull(Lballs, alpha=alpha) else LballHull <- emptyhull
     totalCalls <- nrow(Lstrikes)+nrow(Lballs)+nrow(Rstrikes)+nrow(Rballs)
     badRballs <- sum(inahull(RstrikeHull, matrix(unlist(Rballs), ncol=2, byrow=FALSE)))
     badRstrikes <- sum(inahull(RballHull, matrix(unlist(Rstrikes), ncol=2, byrow=FALSE)))
@@ -64,7 +66,7 @@ makeHullDF <- function(gameIDs)
 }
 
 library(RCurl)
-games <- makeUrls("2017-04-01", "2017-07-31")
+games <- makeUrls("2017-04-01", "2017-09-10")
 for(u in games) {
   if (!url.exists(paste0(u,"/inning")))
     games <- setdiff(games, u)
@@ -89,3 +91,4 @@ for (i in 1:length(uumpids)) {
 sortedumps <- umpAveIncon[order(umpAveIncon$aveincon),]
 print(sortedumps[,c("name","aveincon")], row.names = FALSE, right=FALSE)
 
+saveRDS(umpDF, file="april_sep10_2017.Rda")
