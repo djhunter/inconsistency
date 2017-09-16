@@ -14,6 +14,8 @@ gameID <- "gid_2017_08_12_chnmlb_arimlb_1"
 #gameID <- "gid_2017_04_14_pitmlb_chnmlb_1" # balanced on each side
 #gameID <- "gid_2017_05_12_cinmlb_sfnmlb_1"
 #gameID <- "gid_2017_08_27_detmlb_chamlb_1" # less than 3 strikes
+#gameID <- "gid_2017_09_15_slnmlb_chnmlb_1"
+gameID <- "gid_2017_09_16_slnmlb_chnmlb_1"
 playerdata <- scrape(game.ids=gameID, suffix="players.xml")
 umpName <- playerdata$umpire[playerdata$umpire$position=="home", "name"]
 umpID <- playerdata$umpire[playerdata$umpire$position=="home", "id"]
