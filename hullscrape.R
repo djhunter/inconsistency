@@ -66,7 +66,7 @@ makeHullDF <- function(gameIDs)
 }
 
 library(RCurl)
-games <- makeUrls("2017-04-01", "2017-09-10")
+games <- makeUrls("2017-04-01", "2017-10-02")
 for(u in games) {
   if (!url.exists(paste0(u,"/inning")))
     games <- setdiff(games, u)
@@ -91,4 +91,4 @@ for (i in 1:length(uumpids)) {
 sortedumps <- umpAveIncon[order(umpAveIncon$aveincon),]
 print(sortedumps[,c("name","aveincon")], row.names = FALSE, right=FALSE)
 
-saveRDS(umpDF, file="april_sep_2017.Rda")
+saveRDS(umpDF, file="regularseason2017.Rda")
