@@ -2,7 +2,7 @@ library(pitchRx)
 library(alphahull)
 library(geometry)
 
-gameID <- "gid_2017_08_12_chnmlb_arimlb_1"
+#gameID <- "gid_2017_08_12_chnmlb_arimlb_1"
 #gameID <- "gid_2017_08_20_miamlb_nynmlb_1"
 # gameID <- "gid_2017_08_12_chnmlb_arimlb_1" # not great game
 #gameID <- "gid_2017_07_01_bosmlb_tormlb_1" # well-called game
@@ -15,7 +15,10 @@ gameID <- "gid_2017_08_12_chnmlb_arimlb_1"
 #gameID <- "gid_2017_05_12_cinmlb_sfnmlb_1"
 #gameID <- "gid_2017_08_27_detmlb_chamlb_1" # less than 3 strikes
 #gameID <- "gid_2017_09_15_slnmlb_chnmlb_1"
-gameID <- "gid_2017_09_16_slnmlb_chnmlb_1"
+#gameID <- "gid_2017_09_16_slnmlb_chnmlb_1"
+gameID <- "gid_2017_10_12_chnmlb_wasmlb_1"
+gameID <- "gid_2017_10_29_lanmlb_houmlb_1" # world series game 5
+gameID <- "gid_2017_10_31_houmlb_lanmlb_1" # world series game 6
 playerdata <- scrape(game.ids=gameID, suffix="players.xml")
 umpName <- playerdata$umpire[playerdata$umpire$position=="home", "name"]
 umpID <- playerdata$umpire[playerdata$umpire$position=="home", "id"]
