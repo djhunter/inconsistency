@@ -1,7 +1,7 @@
 library("pitchRx")
 library("alphahull")
 
-makeHullDF <- function(adf) 
+makeHullDF <- function(adf, alpha=0.55388) 
 {
   gameIDs <- as.vector(adf$gameIDs)
   n <- length(gameIDs)
@@ -21,8 +21,15 @@ makeHullDF <- function(adf)
   #alpha = 0.7083333 # half of width of plate
   #alpha = 0.83083 # 1/2 width of strike zone
   #alpha = 0.78929 # 95% of 1/2 width of strike zone
-  alpha = 0.55388 # 1/3 width of strike zone
-  cat(paste0("Using alpha = ", alpha, ".\n"))
+  #alpha = 0.55388 # 1/3 width of strike zone
+  if (is.null(alpha)) {
+    optimize_alpha = TRUE
+    cat("Optimizing for largest alpha.\n")
+  } 
+  else {
+    optimize_alpha = FALSE
+    cat(paste0("Using alpha = ", alpha, ".\n"))
+  }
   for (i in 1:n) {
     if((i %% 10) == 0) cat(".")
     if((i %% 100) == 0) cat(" Processed", i, "games.\n")
@@ -61,39 +68,43 @@ makeHullDF <- function(adf)
     if (nrow(Rballs)<=2)
       RballHull <- emptyhull
     else {
-      # now search for biggest alpha so that center of zone is not in alpha-hull
-      # alphaR = 10 # too big
-      # alphaL = 0.01 # too small
-      # middle = c(0,2) # center of strike zone
-      # epsilon = 0.01
-      # while(alphaR - alphaL > epsilon) {
-      #   alpha <- (alphaR+alphaL)/2
-      #   RballHull <- ahull(na.omit(Rballs), alpha=alpha)
-      #   if(inahull(RballHull, middle))
-      #     alphaR = alpha
-      #   else
-      #     alphaL = alpha
-      # }
-      # alpha = alphaL
+      if (optimize_alpha) {
+        # now search for biggest alpha so that center of zone is not in alpha-hull
+        alphaR = 10 # too big
+        alphaL = 0.01 # too small
+        middle = c(0,2) # center of strike zone
+        epsilon = 0.01
+        while(alphaR - alphaL > epsilon) {
+          alpha <- (alphaR+alphaL)/2
+          RballHull <- ahull(na.omit(Rballs), alpha=alpha)
+          if(inahull(RballHull, middle))
+            alphaR = alpha
+          else
+            alphaL = alpha
+        }
+        alpha = alphaL
+      }
       RballHull <- ahull(Rballs, alpha=alpha)
     }
     
     if (nrow(Lballs)<=2)
       LballHull <- emptyhull
     else {
-      # alphaR = 10 # too big
-      # alphaL = 0.01 # too small
-      # middle = c(0,2) # center of strike zone
-      # epsilon = 0.01
-      # while(alphaR - alphaL > epsilon) {
-      #   alpha <- (alphaR+alphaL)/2
-      #   LballHull <- ahull(Lballs, alpha=alpha)
-      #   if(inahull(LballHull, middle))
-      #     alphaR = alpha
-      #   else
-      #     alphaL = alpha
-      # }
-      # alpha = alphaL
+      if (optimize_alpha) {
+        alphaR = 10 # too big
+        alphaL = 0.01 # too small
+        middle = c(0,2) # center of strike zone
+        epsilon = 0.01
+        while(alphaR - alphaL > epsilon) {
+          alpha <- (alphaR+alphaL)/2
+          LballHull <- ahull(Lballs, alpha=alpha)
+          if(inahull(LballHull, middle))
+            alphaR = alpha
+          else
+            alphaL = alpha
+        }
+        alpha = alphaL
+      }
       LballHull <- ahull(Lballs, alpha=alpha)
     }
     totalCalls <- nrow(Lstrikes)+nrow(Lballs)+nrow(Rstrikes)+nrow(Rballs)
@@ -121,7 +132,7 @@ cat("Finished reading data from file.", "\n")
 
 gids <- as.vector(alldata$gameIDs)
 
-umpDF <- makeHullDF(alldata)
+umpDF <- makeHullDF(alldata, alpha=NULL)
 
 umpDF <- umpDF[umpDF$totalCalls>50,] # eliminate small samples
 uumpids <- unique(umpDF$umpID)
@@ -135,4 +146,4 @@ for (i in 1:length(uumpids)) {
 sortedumps <- umpAveIncon[order(umpAveIncon$aveincon),]
 print(sortedumps[,c("name","aveincon")], row.names = FALSE, right=FALSE)
 
-#saveRDS(umpDF, file="regularseason2017.Rda")
+saveRDS(umpDF, file="regseas2017alphanull.Rda")
