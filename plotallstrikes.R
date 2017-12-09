@@ -35,3 +35,17 @@ ggplot() +
   geom_rect(data=strikezone, aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), color="black", alpha=0) +  
   coord_fixed(xlim = c(-1.5,1.5), ylim=c(0.5,4)) +
   theme_bw()
+
+ggplot() + geom_point(data=normedCalledBalls, aes(x=px, y=pz), alpha=0.02, color="green3", size= 3, stroke = 1) +
+          geom_rect(data=strikezone, aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), color="black", alpha=0) +  
+          coord_fixed(xlim = c(-1.5,1.5), ylim=c(1.0,4)) +
+          theme_bw()
+
+ggplot() + geom_point(data=normedCalledStrikes, aes(x=px, y=pz), alpha=0.02, color="red3", size= 3, stroke = 1) +
+          geom_rect(data=strikezone, aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), color="black", alpha=0) +  
+          coord_fixed(xlim = c(-1.5,1.5), ylim=c(1.0,4)) +
+          theme_bw()
+
+# Save the two images as png, then use imagemagick:
+# composite -dissolve 50 -gravity Center greenballs600600.png redstrikes600600.png -alpha Set result.png
+
