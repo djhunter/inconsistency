@@ -36,11 +36,79 @@ knitr::opts_chunk$set(echo = FALSE)
 > - Different zones for LH and RH batters are OK.
 > - One egregiously bad call is worse/as bad as several marginally bad calls.
 
-## The Established Strike Zone is the Convex Hull
+## Define established ball and strike zones
 
-## The Established Ball Zone is the $\alpha$-Hull
+\begin{center}
+\includegraphics{docs/bothsides.pdf}
+\end{center}
 
-## Tuning $\alpha$
+## Established Strike Zone: Convex Hull
+
+Let $H_l$ denote the open half-plane bounded by the line $l$. The convex hull of a set of points $P$ is the set
+
+$$ S = \bigcap_{\{H_l \mid H_l \cap P = \emptyset\}} H_l^c$$
+
+When $P$ contains the locations of all called strikes, $S$ is the \textit{established strike zone}.
+
+## Established Strike Zone: Convex Hull
+
+\begin{center}
+\includegraphics{docs/bothsidessh.pdf}
+\end{center}
+
+## Established Ball Zone: $\alpha$-Shape?
+
+For $\alpha>0$, let $B_{x,\alpha}$ denote the open ball in $\mathbb{R}^2$ of radius $\alpha$ centered at the point $x$.  Given a set of points $P \subset \mathbb{R}^2$, two points $p_1, p_2 \in \mathbb{R}^2$ are \textit{$\alpha$-neighbors} if $p_1$ and $p_2$ lie on the boundary of some $B_{x,\alpha}$ such that $B_{x,\alpha}\cap P = \emptyset$.  
+
+The \textit{$\alpha$-shape} is the straight line graph formed by drawing line segments between $\alpha$-neighbors.
+
+- $\alpha$-neighbors are close together but next to big empty regions.
+- The $\alpha$-shape is the outline of the points $P$. 
+- Does not need to be convex or even simply-connected.
+- For large $\alpha$, the $\alpha$-shape is the boundary of the convex hull.
+
+## Established Ball Zone: $\alpha$-Shape?
+
+\begin{center}
+\includegraphics{docs/bothsidesshbs.pdf}
+\end{center}
+
+## Established Ball Zone: $\alpha$-Hull
+
+For $\alpha>0$, let $B_{x,\alpha}$ denote the open ball in $\mathbb{R}^2$ of radius $\alpha$ centered at the point $x$.  Given a set of points $P \subset \mathbb{R}^2$, the \textit{$\alpha$-hull} of $P$ is the set 
+$$ X = \bigcap_{\{B_{x,\alpha} \mid B_{x,\alpha} \cap P = \emptyset\}} B_{x,\alpha}^c$$
+
+When $P$ contains the locations of all called balls, $X$ is the \textit{established ball zone}.
+
+- Approaches convex hull $S = \bigcap_{\{H_l \mid H_l \cap P = \emptyset\}} H_l^c$ as $\alpha\rightarrow \infty$.
+- Intuitively: hole punch.
+- May not be simply connected for smallish $\alpha$.
+
+## Established Ball Zone: $\alpha$-Hull
+
+\begin{center}
+\includegraphics{docs/bothsidesbsh.pdf}
+\end{center}
+
+## Inconsistency Index Metric
+
+$S =$ established strike zone (convex hull of strikes) 
+
+$X =$ established ball zone ($\alpha$-hull of balls)
+
+$$
+\mbox{inconsistency} = \frac{\mbox{balls in } S + \mbox{strikes in } X}{\mbox{total calls}}
+$$
+  
+> - This is a \textit{per game} metric. 
+> - Compute separately for right-hand batters and left-hand batters and add. 
+
+## Choosing $\alpha$
+
+ - $\alpha$ too small: Ball zone has lots of components
+ - $\alpha$ too large: Seems unfair to umpires
+ - $\alpha$ way too large: Ball zone becomes simply connected
+ - $\alpha = 0.5539$: $1/3$ rule-book zone width
 
 ![](docs/tuningalpha.png)
 
@@ -50,12 +118,22 @@ umpMetrics <- readRDS("metricsforslides.Rda")
 round(cor(umpMetrics),2)
 ```
 
+## Correlations: observations
 
-## Overlap vs. Inconsistency Index ($r=0.86$)
-![](umpscatter.pdf)
+```{r, comment=NA,echo=FALSE}
+umpMetrics <- readRDS("metricsforslides.Rda")
+round(cor(umpMetrics),2)
+```
 
-## Accuracy vs. Inconsistency ($r=-0.55$)
-![](umpscatter2.pdf)
+> - Walk rate uncorrelated to inconsistency, accuracy.
+> - Smaller zones tend to be more accurate and consistent.
+> - Inconsistency is moderately correlated with accuracy.
 
 ## Accuracy vs. Inconsistency ($r=-0.65$)
 ![](umpscatter3.pdf)
+
+## References
+
+- Data from MLBAM.
+- R packages: alphahull, pitchrx, baseballr
+- Source code on GitHub: \texttt{djhunter/inconsistency}

@@ -126,7 +126,8 @@ cat("Finished reading data from file.", "\n")
 
 #umpDF <- makeHullDF(rs2017[1:917,]) # first three games, for testing
 #umpDF <- makeHullDF(rs2017[1:2038,]) 
-umpDF <- makeHullDF(rs2017) 
+#umpDF <- makeHullDF(rs2017) 
+umpDF <- readRDS("rs2017alpha55withoverlap.Rda")
 
 umpDF <- umpDF[umpDF$totalCalls>50,] # eliminate small samples
 uumpids <- unique(umpDF$umpID)

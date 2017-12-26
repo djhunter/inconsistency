@@ -10,6 +10,7 @@ makeZoneSizeDF <- function(apdf, zeps=0.02)
                       zoneSizeHull = numeric(n), 
                       accuracyRect = numeric(n),
                       accuracyRectCon = numeric(n),
+                      walkRate = numeric(n),
                       stringsAsFactors = FALSE)
 
   for (i in 1:n) {
@@ -48,6 +49,9 @@ makeZoneSizeDF <- function(apdf, zeps=0.02)
                                        (balls$px < 0.9) &
                                        (balls$px > -0.9), na.rm = TRUE)
     outDF[i,"accuracyRectCon"] <- 1-(missedS + missedB)/(nrow(balls) + nrow(strikes))
+    playdata <- pitchdata[!duplicated(pitchdata$play_guid2),]
+    num_walks <- sum(playdata$event == "Walk")
+    outDF[i,"walkRate"] <- num_walks/nrow(playdata)
   }
   cat("Finished. Processed", i, "umpires.\n")
   return(outDF)
@@ -55,6 +59,8 @@ makeZoneSizeDF <- function(apdf, zeps=0.02)
 
 #rs2017 <- readRDS("regSeason2017.Rda")
 cat("Finished reading data from file.", "\n")
+#colnames(rs2017)[69] <- "play_guid2"
+#colnames(rs2017) <- make.unique(colnames(rs2017))
 
 #zumpDF <- makeZoneSizeDF(rs2017[1:2038,]) 
 zumpDF <- makeZoneSizeDF(rs2017) 
@@ -67,6 +73,7 @@ cor(zumpDF15plus$zoneSizeHull, zumpDF15plus$accuracyRect) # -0.77
 cor(zumpDF15plus$zoneSizeRect, zumpDF15plus$accuracyRect) # -0.77
 cor(umpAveIncon15plus$aveincon, zumpDF15plus$accuracyRectCon) # -0.65
 cor(umpAveIncon15plus$aveoverlap, zumpDF15plus$accuracyRectCon) # -0.53
+cor(umpAveIncon15plus$aveincon, zumpDF15plus$walkRate) # -0.65
 
 zumpDF15plus$aveincon <- umpAveIncon15plus$aveincon
 ggplot(zumpDF15plus, aes(y=accuracyRect, x=aveincon, label=umpName))+
@@ -81,12 +88,16 @@ ggplot(zumpDF15plus, aes(y=accuracyRectCon, x=aveincon, label=umpName))+
 ggsave("umpscatter3.pdf", width=18, height=9)
 
 umpMetrics <- cbind(zumpDF15plus, umpAveIncon15plus$aveoverlap)
-colnames(umpMetrics) <- c("Name", "ID", "games", "zSizeR", "zSizeH", "accR", "accCR", "inconI", "inconA")
-rownames(umpMetrics) <- umpMetrics[,1]
-umpMetrics[,1:2] <- NULL
-round(cor(umpMetrics),2)
-pcaUmpMetrics = with(umpMetrics, data.frame(zSizeR=zSizeR, zSizeH=zSizeH, accR=accR, 
-                                            accCR = accCR, conI = 1-inconI, conA=1-inconA))
-rownames(pcaUmpMetrics) <- rownames(umpMetrics)
-prcomp(subset(umpMetrics,select=-games),scale=TRUE)
-prcomp(pcaUmpMetrics, scale = TRUE)
+colnames(umpMetrics) <- c("Name", "ID", "games", "zSizeR", "zSizeH", "accR", "accCR", "walkRt", "inconI", "inconA")
+umpMetrics <- umpMetrics[,c("games", "zSizeH","accCR","walkRt","inconI")]
+colnames(umpMetrics) <- c("Games","ZoneSize","Accuracy","WalkRate","AveIncon")
+saveRDS(umpMetrics,file="metricsforslides.Rda")
+
+# rownames(umpMetrics) <- umpMetrics[,1]
+# umpMetrics[,1:2] <- NULL
+# round(cor(umpMetrics),2)
+# pcaUmpMetrics = with(umpMetrics, data.frame(zSizeR=zSizeR, zSizeH=zSizeH, accR=accR, 
+#                                             accCR = accCR, conI = 1-inconI, conA=1-inconA))
+# rownames(pcaUmpMetrics) <- rownames(umpMetrics)
+# prcomp(subset(umpMetrics,select=-games),scale=TRUE)
+# prcomp(pcaUmpMetrics, scale = TRUE)
