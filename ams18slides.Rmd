@@ -133,6 +133,9 @@ pca <- prcomp(subset(umpMetrics,select=c(-Games)),scale=TRUE)
 print(pca, digits=2)
 ```
 
+## Plot of Components
+
+![](umpPCAscatter.pdf)
 
 ## References
 
