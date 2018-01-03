@@ -112,12 +112,6 @@ $$
 
 ![](docs/tuningalpha.png)
 
-## Correlations
-```{r, comment=NA,echo=2}
-umpMetrics <- readRDS("metricsforslides.Rda")
-round(cor(umpMetrics),2)
-```
-
 ## Correlations: observations
 
 ```{r, comment=NA,echo=FALSE}
@@ -131,6 +125,14 @@ round(cor(umpMetrics),2)
 
 ## Accuracy vs. Inconsistency ($r=-0.65$)
 ![](umpscatter3.pdf)
+
+## Principal Component Analysis
+
+```{r, comment=NA}
+pca <- prcomp(subset(umpMetrics,select=c(-Games)),scale=TRUE)
+print(pca, digits=2)
+```
+
 
 ## References
 
