@@ -25,6 +25,18 @@ for (i in 1:n) {
 cat("Finished. Processed", i, "umpires.\n")
 
 # umpdf$accKDE <- accKDE
+
+# slidemetrics <- readRDS("metricsforslides.Rda")
+
+# umpdf$Krate <- slidemetrics$Krate
 # saveRDS(umpdf, "umpdf2017.Rda")
 
-  
+# Figures for the paper:
+# xtable(cor(umpdf[,c(11,7,8,6)]))
+
+pca <- prcomp(umpdf[,c(6,11,9,12,10)],scale=TRUE)
+
+# Figures for the paper:
+# xtable(cor(umpdf[,c(11,7,8,6)]))
+# xtable(pca$rotation)
+# xtable(cor(umpdf[,c(6,11,9,12,10)]))
