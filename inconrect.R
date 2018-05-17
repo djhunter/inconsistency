@@ -2,8 +2,6 @@ library(dplyr)
 library(tibble)
 #pitches <- as_data_frame(readRDS("pitches2017.Rda"))
 
-library(alphahull)
-
 #' Inconsistency index (rectangles)
 #'
 #' Computes inconsistency index using rectangle layers.
@@ -15,10 +13,13 @@ library(alphahull)
 #' @export
 #'
 #' @examples
-#' inconidx("gid_2017_08_12_chnmlb_arimlb_1")
-inconidx <- function(gameID, layers = 3) {
+#' inconRect("gid_2017_08_12_chnmlb_arimlb_1")
+inconRect <- function(gameID, layers = 3) {
+  M_lhh <- matrix(numeric(layers*4), ncol = 4)
+  M_rhh <- matrix(numeric(layers*4), ncol = 4)
+  colnames(M_lhh) <- c("xleft", "ybottom", "xright", "ytop")
+  colnames(M_rhh) <- c("xleft", "ybottom", "xright", "ytop")
   pitchdata <- subset(pitches, gameday_link == gameID)
-  optimize_alpha = is.null(alpha)
   # normalize up/down locations based on height of batter. Zone goes from 1.5 to 3.5.
   pitchdata$pz <- 2.0*(pitchdata$pz-pitchdata$sz_top)/(pitchdata$sz_top-pitchdata$sz_bot)+3.5
   Lpitchdata <- subset(pitchdata, stand=="L")
@@ -31,58 +32,24 @@ inconidx <- function(gameID, layers = 3) {
   Rballs <- Rballs[!is.na(Rballs[,1]),]
   Lstrikes <- Lstrikes[!is.na(Lstrikes[,1]),]
   Rstrikes <- Rstrikes[!is.na(Rstrikes[,1]),]
-  emptyhull <- ahull(c(-100, -101, -100), c(0,0,1), alpha=10000) # kludge: not really empty but no data will ever be in it
-  if (nrow(Rstrikes)>2) RstrikeHull <- ahull(Rstrikes, alpha=10000) else RstrikeHull <- emptyhull
-  if (nrow(Lstrikes)>2) LstrikeHull <- ahull(Lstrikes, alpha=10000) else LstrikeHull <- emptyhull
-  if (nrow(Rballs)<=2)
-    RballHull <- emptyhull
-  else {
-    if (optimize_alpha) {
-      # now search for biggest alpha so that center of zone is not in alpha-hull
-      alphaR <- 10 # too big
-      alphaL <- 0.01 # too small
-      middle <- c(0,2) # center of strike zone
-      epsilon <- 0.01 # accuracy for search
-      while(alphaR - alphaL > epsilon) {
-        alpha <- (alphaR+alphaL)/2
-        RballHull <- ahull(na.omit(Rballs), alpha=alpha)
-        if(inahull(RballHull, middle))
-          alphaR <- alpha
-        else
-          alphaL <- alpha
-      }
-      alpha <- alphaL * alpha_ratio
-    }
-    RballHull <- ahull(Rballs, alpha=alpha)
-    alpha_RH <- alpha
-  }
-    
-  if (nrow(Lballs)<=2)
-    LballHull <- emptyhull
-  else {
-    if (optimize_alpha) {
-      alphaR <- 10 # too big
-      alphaL <- 0.01 # too small
-      middle <- c(0,2) # center of strike zone
-      epsilon <- 0.01 # accuracy for search
-      while(alphaR - alphaL > epsilon) {
-        alpha <- (alphaR+alphaL)/2
-        LballHull <- ahull(Lballs, alpha=alpha)
-        if(inahull(LballHull, middle))
-          alphaR <- alpha
-        else
-          alphaL <- alpha
-      }
-      alpha <- alphaL * alpha_ratio
-    }
-    LballHull <- ahull(Lballs, alpha=alpha)
-    alpha_LH <- alpha
-  }
-  totalCalls <- nrow(Lstrikes)+nrow(Lballs)+nrow(Rstrikes)+nrow(Rballs)
-  badRballs <- sum(inahull(RstrikeHull, matrix(unlist(Rballs), ncol=2, byrow=FALSE)))
-  badRstrikes <- sum(inahull(RballHull, matrix(unlist(Rstrikes), ncol=2, byrow=FALSE)))
-  badLballs <- sum(inahull(LstrikeHull, matrix(unlist(Lballs), ncol=2, byrow=FALSE)))
-  badLstrikes <- sum(inahull(LballHull, matrix(unlist(Lstrikes), ncol=2, byrow=FALSE)))
-  incIdx <- (badLballs+badLstrikes+badRballs+badRstrikes)/totalCalls
-  return(list(incIdx = incIdx, alpha_LH = alpha_LH, alpha_RH = alpha_RH))
+  xlhh <- sort(Lstrikes$px)
+  xrhh <- sort(Rstrikes$px)
+  xmin_l <- xlhh[1:layers]
+  xmin_r <- xrhh[1:layers]
+  xmax_l <- xlhh[length(xlhh):(length(xlhh)-layers+1)]
+  xmax_r <- xrhh[length(xrhh):(length(xrhh)-layers+1)]
+  ylhh <- sort(Lstrikes$pz)
+  yrhh <- sort(Rstrikes$pz)
+  ymin_l <- ylhh[1:layers]
+  ymin_r <- yrhh[1:layers]
+  ymax_l <- ylhh[length(ylhh):(length(ylhh)-layers+1)]
+  ymax_r <- yrhh[length(yrhh):(length(yrhh)-layers+1)]
+  incR <- (sum(sapply(1:layers, function(i) 
+    {Rballs$px < xmax_r[i] & Rballs$px > xmin_r[i] & Rballs$pz > ymin_r[i] & Rballs$pz < ymax_r[i]})) +
+          sum(sapply(1:layers, function(i) 
+    {Lballs$px < xmax_l[i] & Lballs$px > xmin_l[i] & Lballs$pz > ymin_l[i] & Lballs$pz < ymax_l[i]}))) /
+            (nrow(Lballs) + nrow(Rballs))
+  M_lhh <- cbind(xmin_l, ymin_l, xmax_l, ymax_l)
+  M_rhh <- cbind(xmin_r, ymin_r, xmax_r, ymax_r)
+  return(list(incR = incR, M_lhh = M_lhh, M_rhh = M_rhh))
 }
