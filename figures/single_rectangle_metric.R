@@ -3,9 +3,10 @@ gid <- "gid_2017_04_14_pitmlb_chnmlb_1" # balanced on each side
 
 library(dplyr)
 library(tibble)
-#pitches <- as_data_frame(readRDS("../pitches2017.Rda"))
+#pitches <- as_data_frame(readRDS("pitches2017.Rda"))
 
-source('~/inconsistency/inconrect.R')
+source('inconrect.R')
+source('figures/prettyGID.R')
 
 library(scales) # for transparency
 
@@ -14,12 +15,7 @@ ly <- 1
 
 ilr <- inconRect(gid, layers = ly)
 
-#setEPS()
-#cairo_ps(file="~/inconsistency/figures/single_rectangle.eps", 
-#         width=16, height=8, onefile = FALSE, 
-#         fallback_resolution = 600)
-
-pdf(file="~/inconsistency/figures/single_rectangle.pdf",
+pdf(file="figures/single_rectangle.pdf",
     width=9, height=5, paper="special")
 
 par(mfrow=c(1,2)) # plot side by side
@@ -48,13 +44,13 @@ plot(dummyframe,xlim=x_range, ylim=y_range, asp=1, col=alpha("blue", transp), pc
 points(Lballs,col=alpha("blue", transp), pch=19, cex=ballsize)
 points(Lstrikes, col=alpha("red", transp), pch=19, cex=ballsize)
 rect(ilr$M_lhh[,"xmin_l"], ilr$M_lhh[,"ymin_l"], ilr$M_lhh[,"xmax_l"], ilr$M_lhh[,"ymax_l"])
-title(main=paste0(gid, "\nvs. left-handed batters", collapse=""))
+title(main=paste0(prettyGID(gid), "\nvs. left-handed batters", collapse=""))
 
 plot(dummyframe,xlim=x_range, ylim=y_range, asp=1, col=alpha("blue", transp), pch=19, cex=ballsize)
 points(Rballs,col=alpha("blue", transp), pch=19, cex=ballsize)
 points(Rstrikes, col=alpha("red", transp), pch=19, cex=ballsize)
 rect(ilr$M_rhh[,"xmin_r"], ilr$M_rhh[,"ymin_r"], ilr$M_rhh[,"xmax_r"], ilr$M_rhh[,"ymax_r"])
-title(main=paste0(gid, "\nvs. right-handed batters", collapse=""))
+title(main=paste0(prettyGID(gid), "\nvs. right-handed batters", collapse=""))
 
 par(mfrow=c(1,1)) # reset plot parameters
 

@@ -14,6 +14,14 @@ prettyGID <- function(gameID) {
   month <- as.numeric(substr(gameID, 10, 11))
   day <- as.numeric(substr(gameID, 13, 14))
   date <- paste(month, day, year, sep="/")
-  home <- substr(gameID, 16,21)
-  away <- substr(gameID, 23, 28)
+  away <- substr(gameID, 16, 18)
+  home <- substr(gameID, 23, 25)
+  team <- c("Pirates", "Nationals", "Rangers", "Twins", "Blue Jays", "Diamondbacks", "Brewers", 
+             "Marlins", "Athletics", "Indians", "Red Sox", "Padres", "Cardinals", "Cubs", "Mariners",
+             "Royals", "Rays", "Rockies", "Phillies", "Mets", "Astros", "White Sox", "Orioles", 
+             "Dodgers", "Reds", "Braves", "Angels", "Tigers", "Yankees", "Giants")
+  names(team) <- c("pit", "was", "tex", "min", "tor", "ari", "mil", "mia", "oak", "cle",
+                    "bos", "sdn", "sln", "chn", "sea", "kca", "tba", "col", "phi", "nyn", 
+                    "hou", "cha", "bal", "lan", "cin", "atl", "ana", "det", "nya", "sfn")
+  return(paste0(team[away], " at ", team[home], ", ", date))
 }
