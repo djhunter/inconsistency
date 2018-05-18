@@ -12,12 +12,12 @@
 #gid <- "gid_2017_08_10_kcamlb_slnmlb_1"
 #gid <- "gid_2017_04_20_wasmlb_atlmlb_1" # only 30 calls
 #gid <- "gid_2017_06_04_chamlb_detmlb_1" # worst game by metric
-#gid <- "gid_2017_04_14_pitmlb_chnmlb_1" # balanced on each side
+gid <- "gid_2017_04_14_pitmlb_chnmlb_1" # balanced on each side
 #gid <- "gid_2017_05_12_cinmlb_sfnmlb_1"
 #gid <- "gid_2017_08_27_detmlb_chamlb_1" # less than 3 strikes
 #gid <- "gid_2017_09_15_slnmlb_chnmlb_1"
 #gid <- "gid_2017_09_16_slnmlb_chnmlb_1"
-gid <- "gid_2017_08_20_slnmlb_pitmlb_1" # all pitches are NA's
+#gid <- "gid_2017_08_20_slnmlb_pitmlb_1" # all pitches are NA's
 
 library(dplyr)
 library(tibble)
@@ -34,7 +34,7 @@ alp <- NULL # Search for optimal alpha
 alp <- 0.6
 alp_rat = 0.95
 # Set parameter for rectangle method
-ly <- 8
+ly <- 10
 
 inconList <- inconidx(gid, alpha=alp, alpha_ratio = alp_rat)
 ilr <- inconRect(gid, layers = ly)
@@ -94,3 +94,5 @@ rect(ilr$M_lhh[,"xmin_l"], ilr$M_lhh[,"ymin_l"], ilr$M_lhh[,"xmax_l"], ilr$M_lhh
 points(Lballs,col=alpha("blue", transp), pch=19, cex=ballsize)
 points(Lstrikes, col=alpha("red", transp), pch=19, cex=ballsize)
 title(main=paste0(gid, "\nvs. left-handed batters", collapse=""))
+
+par(mfrow=c(1,1)) # reset plot parameters
