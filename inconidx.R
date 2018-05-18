@@ -56,10 +56,10 @@ inconidx <- function(gameID, alpha=NULL, alpha_ratio=0.95) {
       alpha <- alphaL * alpha_ratio
     }
     RballHull <- ahull(Rballs, alpha=alpha)
-    alpha_RH <- alpha
   }
+  alpha_RH <- alpha
     
-  if (nrow(Lballs)<=2)
+  if (nrow(Lballs)<=2) 
     LballHull <- emptyhull
   else {
     if (optimize_alpha) {
@@ -78,8 +78,8 @@ inconidx <- function(gameID, alpha=NULL, alpha_ratio=0.95) {
       alpha <- alphaL * alpha_ratio
     }
     LballHull <- ahull(Lballs, alpha=alpha)
-    alpha_LH <- alpha
   }
+  alpha_LH <- alpha
   totalCalls <- nrow(Lstrikes)+nrow(Lballs)+nrow(Rstrikes)+nrow(Rballs)
   badRballs <- sum(inahull(RstrikeHull, matrix(unlist(Rballs), ncol=2, byrow=FALSE)))
   badRstrikes <- sum(inahull(RballHull, matrix(unlist(Rstrikes), ncol=2, byrow=FALSE)))

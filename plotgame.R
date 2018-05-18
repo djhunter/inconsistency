@@ -1,4 +1,6 @@
-# This script will create two plots (RHH and LHH) for the game whose id is in gid
+# This script will create two plots (each showing RHH and LHH) for the game whose id is in gid
+# The first plot shows the alpha-convex hull method.
+# The second plot shows the rectangle method.
 
 # Some sample game id's:
 #gid <- "gid_2017_08_12_chnmlb_arimlb_1"
@@ -9,12 +11,13 @@
 #gid <- "gid_2017_07_05_nynmlb_wasmlb_1"
 #gid <- "gid_2017_08_10_kcamlb_slnmlb_1"
 #gid <- "gid_2017_04_20_wasmlb_atlmlb_1" # only 30 calls
-gid <- "gid_2017_06_04_chamlb_detmlb_1" # worst game by metric
+#gid <- "gid_2017_06_04_chamlb_detmlb_1" # worst game by metric
 #gid <- "gid_2017_04_14_pitmlb_chnmlb_1" # balanced on each side
 #gid <- "gid_2017_05_12_cinmlb_sfnmlb_1"
 #gid <- "gid_2017_08_27_detmlb_chamlb_1" # less than 3 strikes
 #gid <- "gid_2017_09_15_slnmlb_chnmlb_1"
 #gid <- "gid_2017_09_16_slnmlb_chnmlb_1"
+gid <- "gid_2017_08_20_slnmlb_pitmlb_1" # all pitches are NA's
 
 library(dplyr)
 library(tibble)
@@ -22,6 +25,7 @@ library(tibble)
 
 library(alphahull)
 source('inconidx.R')
+source('inconrect.R')
 
 library(scales) # for transparency
 
@@ -29,7 +33,11 @@ library(scales) # for transparency
 alp <- NULL # Search for optimal alpha
 alp <- 0.6
 alp_rat = 0.95
+# Set parameter for rectangle method
+ly <- 8
+
 inconList <- inconidx(gid, alpha=alp, alpha_ratio = alp_rat)
+ilr <- inconRect(gid, layers = ly)
 
 par(mfrow=c(1,2)) # plot side by side
 ballsize=1.5
@@ -71,6 +79,18 @@ if (nrow(Lstrikes)>2) LstrikeHull <- ahull(Lstrikes, alpha=10000) else LstrikeHu
 
 plot(LballHull, add=TRUE, wpoints=FALSE, col=c(4,0,0,0,0,0))
 plot(LstrikeHull, add=TRUE, wpoints=FALSE, col=c(2,0,0,0,0,0))
+points(Lballs,col=alpha("blue", transp), pch=19, cex=ballsize)
+points(Lstrikes, col=alpha("red", transp), pch=19, cex=ballsize)
+title(main=paste0(gid, "\nvs. left-handed batters", collapse=""))
+
+plot(dummyframe,xlim=x_range, ylim=y_range, asp=1, col=alpha("blue", transp), pch=19, cex=ballsize)
+rect(ilr$M_rhh[,"xmin_r"], ilr$M_rhh[,"ymin_r"], ilr$M_rhh[,"xmax_r"], ilr$M_rhh[,"ymax_r"])
+points(Rballs,col=alpha("blue", transp), pch=19, cex=ballsize)
+points(Rstrikes, col=alpha("red", transp), pch=19, cex=ballsize)
+title(main=paste0(gid, "\nvs. right-handed batters", collapse=""))
+
+plot(dummyframe,xlim=x_range, ylim=y_range, asp=1, col=alpha("blue", transp), pch=19, cex=ballsize)
+rect(ilr$M_lhh[,"xmin_l"], ilr$M_lhh[,"ymin_l"], ilr$M_lhh[,"xmax_l"], ilr$M_lhh[,"ymax_l"])
 points(Lballs,col=alpha("blue", transp), pch=19, cex=ballsize)
 points(Lstrikes, col=alpha("red", transp), pch=19, cex=ballsize)
 title(main=paste0(gid, "\nvs. left-handed batters", collapse=""))
