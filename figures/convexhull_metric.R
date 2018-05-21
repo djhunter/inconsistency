@@ -1,5 +1,4 @@
-# Figure ??: alpha-convex hull metric
-gid <- "gid_2017_04_14_pitmlb_chnmlb_1" # balanced on each side
+# Figure ??: convex hull metric
 
 library(dplyr)
 library(tibble)
@@ -16,21 +15,7 @@ library(alphahull)
 # parameters for alpha-convex hull method
 alph <- 0.7
 
-#gameID <- "gid_2017_08_12_chnmlb_arimlb_1"
-#gameID <- "gid_2017_04_14_pitmlb_chnmlb_1" # balanced on each side
-#gid <- "gid_2017_08_12_chnmlb_arimlb_1"
-#gameID <- "gid_2017_08_20_miamlb_nynmlb_1"
-#gid <- "gid_2017_08_12_chnmlb_arimlb_1" # not great game
-#gameID <- "gid_2017_07_01_bosmlb_tormlb_1" # well-called game
-#gameID <- "gid_2017_07_04_anamlb_minmlb_1"
 gameID <- "gid_2017_08_10_kcamlb_slnmlb_1" # good alpha-convex hull illustration
-#gid <- "gid_2017_04_20_wasmlb_atlmlb_1" # only 30 calls
-#gameID <- "gid_2017_06_04_chamlb_detmlb_1" # worst game by metric
-#gid <- "gid_2017_05_12_cinmlb_sfnmlb_1"
-#gid <- "gid_2017_08_27_detmlb_chamlb_1" # less than 3 strikes
-#gid <- "gid_2017_09_15_slnmlb_chnmlb_1"
-#gid <- "gid_2017_09_16_slnmlb_chnmlb_1"
-#gameID <- "gid_2017_08_13_colmlb_miamlb_1" # illustrates need for alpha-hull
 
 pitchdata <- subset(pitches, gameday_link == gameID)
 # normalize up/down locations based on height of batter. Zone goes from 1.5 to 3.5.
@@ -45,39 +30,25 @@ Lballs <- Lballs[!is.na(Lballs[,1]),]
 Rballs <- Rballs[!is.na(Rballs[,1]),]
 Lstrikes <- Lstrikes[!is.na(Lstrikes[,1]),]
 Rstrikes <- Rstrikes[!is.na(Rstrikes[,1]),]
-RballHull <- ahull(Rballs, alpha=alph)
 RstrikeHull <- ahull(Rstrikes, alpha=10000) 
 rshpoints <- data.frame(x = RstrikeHull$xahull[RstrikeHull$arcs[,"end1"],1], 
                         y = RstrikeHull$xahull[RstrikeHull$arcs[,"end1"],2])
-rbharcs <- data.frame(x = RballHull$arcs[,"c1"],
-                      y = RballHull$arcs[,"c2"], 
-                      start = (atan2(RballHull$arcs[,"v.x"], RballHull$arcs[,"v.y"])-RballHull$arcs[,"theta"]), 
-                      end = (atan2(RballHull$arcs[,"v.x"], RballHull$arcs[,"v.y"])+RballHull$arcs[,"theta"]),
-                      r = RballHull$arcs[,"r"])
 ebzrplot <- ggplot() + 
-            geom_arc(data=rbharcs, aes(x0=x, y0=y, r=r, start=start, end=end), color="blue", lineend="round") +
             geom_point(data=Rballs, aes(x=px,y=pz), alpha=0.3, color="blue", size=3, stroke=1) +
             geom_point(data=Rstrikes, aes(x=px,y=pz), alpha=0.3, color="red3", size=3, stroke=1, shape=23, fill="red3") +
             geom_polygon(data=rshpoints, aes(x=x, y=y), color="red", fill=NA, linetype="solid") +
             coord_fixed(xlim=c(-1.7,1.7), ylim=c(0.8,4.2)) + 
             theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
             ggtitle(" ", subtitle="vs. right-handed batters")
-LballHull <- ahull(Lballs, alpha=alph)
-lbharcs <- data.frame(x = LballHull$arcs[,"c1"],
-                      y = LballHull$arcs[,"c2"], 
-                      start = (atan2(LballHull$arcs[,"v.x"], LballHull$arcs[,"v.y"])-LballHull$arcs[,"theta"]), 
-                      end = (atan2(LballHull$arcs[,"v.x"], LballHull$arcs[,"v.y"])+LballHull$arcs[,"theta"]),
-                      r = LballHull$arcs[,"r"])
 LstrikeHull <- ahull(Lstrikes, alpha=10000) 
 lshpoints <- data.frame(x = LstrikeHull$xahull[LstrikeHull$arcs[,"end1"],1], 
                         y = LstrikeHull$xahull[LstrikeHull$arcs[,"end1"],2])
 ebzlplot <- ggplot() + 
-            geom_arc(data=lbharcs, aes(x0=x, y0=y, r=r, start=start, end=end), color="blue", lineend="round") +
             geom_point(data=Lballs, aes(x=px,y=pz), alpha=0.3, color="blue", size=3, stroke=1) +
             geom_point(data=Lstrikes, aes(x=px,y=pz), alpha=0.3, color="red3", size=3, stroke=1, shape=23, fill="red3") +
             geom_polygon(data=lshpoints, aes(x=x, y=y), color="red", fill=NA, linetype="solid") +
             coord_fixed(xlim=c(-1.7,1.7), ylim=c(0.8,4.2)) + 
             theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
             ggtitle(prettyGID(gameID), subtitle="vs. left-handed batters")
-ggsave("figures/alphahull_metric.pdf", plot = grid.arrange(ebzlplot, ebzrplot, ncol=2), 
+ggsave("figures/convexhull_metric.pdf", plot = grid.arrange(ebzlplot, ebzrplot, ncol=2), 
        width = 7, height = 4, dpi = 300)
