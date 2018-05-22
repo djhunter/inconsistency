@@ -68,5 +68,5 @@ saveRDS(games17, file="games17all5.Rda")
 #cor(games17[,5:9])
 #library("GGally")
 #ggpairs(games17[,5:9])
-#prcomp(games17[,5:9])
+#prcomp(games17[,5:9], scale=TRUE)
 
