@@ -64,4 +64,9 @@ games17 <- data.frame(gid, umpname, umpid, npitch, incR1, incR10,
 saveRDS(games17, file="games17all5.Rda")
 
 #pairs(games17[,c(5,7,8,9,10,11,12,13)], pch=".", upper.panel=panel.smooth)
+#pairs(games17[,5:9], pch=".", upper.panel = panel.smooth)
+#cor(games17[,5:9])
+#library("GGally")
+#ggpairs(games17[,5:9])
+#prcomp(games17[,5:9])
 
