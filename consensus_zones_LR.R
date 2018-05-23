@@ -15,11 +15,11 @@ balls <- pitches[pitches$des=="Ball" | pitches$des=="Ball In Dirt",
 # normalize up/down locations based on height of batter. Zone goes from 1.5 to 3.5.
 balls$pz <- 2.0*(balls$pz-balls$sz_top)/(balls$sz_top-balls$sz_bot)+3.5
 balls <- balls[!is.na(balls[,1]),]
-strikes <- strikes[1:100,] # for testing
+#strikes <- strikes[1:100,] # for testing
 
 # initialize L/R variables
-stk <- list(L=data.frame(), R=data.frame())
-bll <- list(L=data.frame(), R=data.frame())
+stk <- list(L=data_frame(), R=data_frame())
+bll <- list(L=data_frame(), R=data_frame())
 H_scv <- list(L = matrix(), R = matrix())
 H_pi <- list(L = matrix(), R = matrix())
 fhat <- list(L=list(), R=list())
