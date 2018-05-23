@@ -27,11 +27,13 @@ szcontour <- list(L=list(), R=list())
 szcontourdf <- list(L=data.frame(), R=data.frame())
 strikesincontour <- list(L=numeric(), R=numeric())
 ballsincontour <- list(L=numeric(), R=numeric())
+H_scv <- readRDS("hscvLR2017.Rda") # read these instead of
+H_pi <- readRDS("hpiLR2017.Rda")   # recomputing
 for(s in c("L", "R")) {
   stk[[s]] <- strikes[strikes$stand==s,c("px","pz")]
   bll[[s]] <- balls[balls$stand==s,c("px","pz")]
-  H_scv[[s]] <- Hscv(x=stk[[s]])
-  H_pi[[s]] <- Hpi(x=stk[[s]])
+  # H_scv[[s]] <- Hscv(x=stk[[s]]) # takes several hours
+  # H_pi[[s]] <- Hpi(x=stk[[s]]) #takes hours
   fhat[[s]] <- kde(x=stk[[s]], H=H_scv[[s]], compute.cont=TRUE)
   szcontour[[s]] <- with(fhat[[s]], contourLines(x=eval.points[[1]], y=eval.points[[2]],
                                     z=estimate,levels=cont["10%"])[[1]])
@@ -42,22 +44,32 @@ for(s in c("L", "R")) {
                                                 szcontourdf[[s]]$px, szcontourdf[[s]]$pz) != 0)
 }
 
-saveRDS(H_scv, "hscvLR2017.Rda")
+#saveRDS(H_scv, "hscvLR2017.Rda")
+#saveRDS(H_pi, "hpiLR2017.Rda")
 
-# print("proportion of Lstrikes in contour = ", Lstrikesincontour/nrow(strikesL)) # should be 0.90
-# print("proportion of Rstrikes in contour = ", Rstrikesincontour/nrow(strikesR)) # should be 0.90
-# print("proportion of Lballs in contour = ", Lballsincontour/nrow(ballsL)) # should be 0.10
-# print("proportion of Rballs in contour = ", Rballsincontour/nrow(ballsR)) # should be 0.10
-# 
-# 
-# strike_contour_plotL <- ggplot() + geom_point(data=strikesL, aes(x=px,y=pz), alpha=0.02, color="red3", size=3, stroke=1) +
-#            geom_path(data=contourdf10L, aes(x=px, y=pz), color="black") +
-#            coord_fixed(xlim=c(-1.5,1.5), ylim=c(1.0,4)) + 
-#            theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank())
-# strike_contour_plotR <- ggplot() + geom_point(data=strikesR, aes(x=px,y=pz), alpha=0.02, color="red3", size=3, stroke=1) +
-#            geom_path(data=contourdf10R, aes(x=px, y=pz), color="black") +
-#            coord_fixed(xlim=c(-1.5,1.5), ylim=c(1.0,4)) + 
-#            theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank())
-# 
-# require(gridExtra)
-# grid.arrange(strike_contour_plotL, strike_contour_plotR, ncol=2)
+cat("proportion of Lstrikes in contour =", strikesincontour$L/nrow(stk$L), "\n")
+cat("proportion of Rstrikes in contour =", strikesincontour$R/nrow(stk$R), "\n")
+cat("proportion of Lballs in contour =", ballsincontour$L/nrow(bll$L), "\n")
+cat("proportion of Rballs in contour =", ballsincontour$R/nrow(bll$R), "\n")
+
+strikePlot <- list(L=list(), R=list())
+ballPlot <- list(L=list(), R=list())
+ 
+for(s in c("L", "R")) {
+  strikePlot[[s]] <- ggplot() + geom_point(data=stk[[s]], aes(x=px,y=pz), alpha=0.01, color="red3", size=3, stroke=1) +
+                     geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="black") +
+                     coord_fixed(xlim=c(-1.5,1.5), ylim=c(1.0,4)) + 
+                     theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank())
+  ballPlot[[s]] <- ggplot() + geom_point(data=bll[[s]], aes(x=px,y=pz), alpha=0.01, color="blue", size=3, stroke=1) +
+                   geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="black") +
+                   coord_fixed(xlim=c(-1.5,1.5), ylim=c(1.0,4)) + 
+                   theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank())
+}
+require(gridExtra)
+conzones <- grid.arrange(strikePlot$L, strikePlot$R, ballPlot$L, ballPlot$R, ncol=2)
+ggsave("figures/consensus_zones.pdf", plot = conzones, width = 8, height = 8, dpi = 300)
+
+# to reduce size:
+# pdf2ps consensus_zones.pdf consensus_zones.eps
+# ps2pdf -dPDFSETTINGS=/printer consensus_zones.eps consensus_zones_printer.pdf
+
