@@ -19,7 +19,7 @@ balls <- pitches[pitches$des=="Ball" | pitches$des=="Ball In Dirt",
 balls$pz <- 2.0*(balls$pz-balls$sz_top)/(balls$sz_top-balls$sz_bot)+3.5
 balls <- balls[!is.na(balls[,1]),]
 
-nxy <- 1000 # number of grid squares in each direction
+nxy <- 50 # number of grid squares in each direction
 xmin <- -1.5
 xmax <- 1.5
 ymin <- 1
@@ -31,8 +31,9 @@ dy <- (ymax-ymin)/nxy
 xcenters <- seq(xmin+dx/2, xmax-dx/2, length.out = nxy)
 ycenters <- seq(ymin+dy/2, ymax-dy/2, length.out = nxy)
 centers <- data.frame(px = rep(xcenters, nxy), pz = rep(ycenters, each=nxy))
-p_min <- 0.5 # min proportion for border
-stk_min <- 2 # min number of strikes for consideration
+p_min <- 0.5 # lower bound proportion for border
+p_max <- 0.99 # upper bound proportion for border
+stk_min <- 1 # min number of strikes for consideration
 
 # initialize L/R variables
 stk <- list(L=data_frame(), R=data_frame())
@@ -46,18 +47,18 @@ for(s in c("L", "R")) {
   bll[[s]] <- balls[balls$stand==s,c("px","pz")]
   for(i in 1:nxy) {
     for(j in 1:nxy) {
-      strikesInSquare <- sum(point.in.polygon(stk[[s]]$px, stk[[s]]$pz, 
-                                              c(xseq[i], xseq[i+1], xseq[i+1], xseq[i], xseq[i]), 
+      strikesInSquare <- sum(point.in.polygon(stk[[s]]$px, stk[[s]]$pz,
+                                              c(xseq[i], xseq[i+1], xseq[i+1], xseq[i], xseq[i]),
                                               c(yseq[j], yseq[j], yseq[j+1], yseq[j+1], yseq[j])))
-      ballsInSquare <- sum(point.in.polygon(bll[[s]]$px, bll[[s]]$pz, 
-                                              c(xseq[i], xseq[i+1], xseq[i+1], xseq[i], xseq[i]), 
+      ballsInSquare <- sum(point.in.polygon(bll[[s]]$px, bll[[s]]$pz,
+                                              c(xseq[i], xseq[i+1], xseq[i+1], xseq[i], xseq[i]),
                                               c(yseq[j], yseq[j], yseq[j+1], yseq[j+1], yseq[j])))
       if (strikesInSquare >= stk_min) {
         sprop[[s]][i,j] <- strikesInSquare/(strikesInSquare+ballsInSquare)
       }
     }
   }
-  onborder[[s]] <- which(sprop[[s]] >= p_min)
+  onborder[[s]] <- which((sprop[[s]] > p_min) & (sprop[[s]] < p_max))
   czonepoly[[s]] <- centers[onborder[[s]],][chull(centers[onborder[[s]],]),]
 }
 
@@ -77,3 +78,4 @@ for(s in c("L", "R")) {
 require(gridExtra)
 conzones <- grid.arrange(strikePlot$L, strikePlot$R, ballPlot$L, ballPlot$R, ncol=2)
 ggsave("figures/con_zones_roeg.pdf", plot = conzones, width = 8, height = 8, dpi = 300)
+# saveRDS(czonepoly, "conzonepoly50.Rda") # outline of consensus zones when nxy = 50
