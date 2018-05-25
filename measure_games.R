@@ -12,21 +12,16 @@ source('inconrect.R') # index using rectangles
 
 gid <- unique(pitches$gameday_link)
 numgames <- length(gid)
-
-incR1 <- numeric(numgames)
-#incR3 <- numeric(numgames)
-#incR5 <- numeric(numgames)
-incR10 <- numeric(numgames)
-#incR11 <- numeric(numgames)
-#incH4 <- numeric(numgames)
-#incH5 <- numeric(numgames)
-#incH6 <- numeric(numgames)
-incIDX7 <- numeric(numgames)
-incCH <- numeric(numgames)
-incACH7 <- numeric(numgames)
 npitch <- numeric(numgames)
 umpname <- character(numgames)
 umpid <- numeric(numgames)
+
+# Inconsistency metrics
+incR1 <- numeric(numgames)
+incR10 <- numeric(numgames)
+incIDX7 <- numeric(numgames)
+incCH <- numeric(numgames)
+incACH7 <- numeric(numgames)
 
 for(i in 1:numgames) {
 # for(i in 1:10) { # for testing purposes
@@ -38,15 +33,7 @@ for(i in 1:numgames) {
   npitch[i] <- nrow(calledPitches)
   if(npitch[i] > 0) {
     incR1[i] <- inconRect(gid[i], layers = 1)$incR 
-#    incR3[i] <- inconRect(gid[i], layers = 3)$incR 
-#    incR5[i] <- inconRect(gid[i], layers = 5)$incR 
     incR10[i] <- inconRect(gid[i], layers = 10)$incR 
-#    incR11[i] <- inconRect(gid[i], layers = 11)$incR 
-#    incH4[i] <- inconidx(gid[i], alpha=0.4)$incIdx 
-#    incH5[i] <- inconidx(gid[i], alpha=0.5)$incIdx 
-#    incH6[i] <- inconidx(gid[i], alpha=0.6)$incIdx 
-#    incH7[i] <- inconidx(gid[i], alpha=0.7)$incIdx 
-#    incH8[i] <- inconidx(gid[i], alpha=0.8)$incIdx
     incCH[i] <- inconConvex(gid[i])
     incIDX7[i] <- inconidx(gid[i], alpha=0.7)$incIdx
     incACH7[i] <- inconAlphaConvex(gid[i], alpha=0.7)$incACH
@@ -57,11 +44,9 @@ for(i in 1:numgames) {
   if((i %% 100) == 0) cat(" Processed", i, "games.\n")
 }
 
-#games17 <- data.frame(gid, umpname, umpid, npitch, incR1, incR3, incR5, incR10, incR11, 
-#                      incH4, incH5, incH6, incH7, incH8)
-games17 <- data.frame(gid, umpname, umpid, npitch, incR1, incR10,
-                      incIDX7, incCH, incACH7)
-saveRDS(games17, file="games17all5.Rda")
+games17inc <- data.frame(gid, umpname, umpid, npitch, incR1, incR10,
+                         incIDX7, incCH, incACH7)
+saveRDS(games17inc, file="games17inc.Rda")
 
 #pairs(games17[,c(5,7,8,9,10,11,12,13)], pch=".", upper.panel=panel.smooth)
 #pairs(games17[,5:9], pch=".", upper.panel = panel.smooth)

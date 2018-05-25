@@ -43,7 +43,7 @@ for(s in c("L", "R")) {
   ballsincontour[[s]] <- sum(point.in.polygon(bll[[s]]$px, bll[[s]]$pz, 
                                                 szcontourdf[[s]]$px, szcontourdf[[s]]$pz) != 0)
 }
-
+saveRDS(szcontourdf, "upper90kde17.Rda")
 #saveRDS(H_scv, "hscvLR2017.Rda")
 #saveRDS(H_pi, "hpiLR2017.Rda")
 
@@ -67,7 +67,7 @@ for(s in c("L", "R")) {
 }
 require(gridExtra)
 conzones <- grid.arrange(strikePlot$L, strikePlot$R, ballPlot$L, ballPlot$R, ncol=2)
-ggsave("figures/consensus_zones.pdf", plot = conzones, width = 8, height = 8, dpi = 300)
+#ggsave("figures/consensus_zones.pdf", plot = conzones, width = 8, height = 8, dpi = 300)
 
 # to reduce size:
 # pdf2ps consensus_zones.pdf consensus_zones.eps

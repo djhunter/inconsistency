@@ -31,6 +31,7 @@ gameID <- "gid_2017_08_10_kcamlb_slnmlb_1" # good alpha-convex hull illustration
 #gid <- "gid_2017_09_15_slnmlb_chnmlb_1"
 #gid <- "gid_2017_09_16_slnmlb_chnmlb_1"
 #gameID <- "gid_2017_08_13_colmlb_miamlb_1" # illustrates need for alpha-hull
+gameID <- "gid_2017_09_22_phimlb_atlmlb_1"
 
 pitchdata <- subset(pitches, gameday_link == gameID)
 # normalize up/down locations based on height of batter. Zone goes from 1.5 to 3.5.
@@ -79,5 +80,5 @@ ebzlplot <- ggplot() +
             coord_fixed(xlim=c(-1.7,1.7), ylim=c(0.8,4.2)) + 
             theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
             ggtitle(prettyGID(gameID), subtitle="vs. left-handed batters")
-ggsave("figures/alphahull_metric.pdf", plot = grid.arrange(ebzlplot, ebzrplot, ncol=2), 
-       width = 7, height = 4, dpi = 300)
+#ggsave("figures/alphahull_metric.pdf", plot = grid.arrange(ebzlplot, ebzrplot, ncol=2), 
+#       width = 7, height = 4, dpi = 300)
