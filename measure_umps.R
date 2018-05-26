@@ -4,10 +4,12 @@
 library(dplyr)
 library(tibble)
 library(sp)
+library(rgeos)
 library(pracma)
 library(ks)
 # pitches <- as_data_frame(readRDS("pitches2017.Rda"))
 games17inc <- as_data_frame(readRDS("games17inc.Rda"))
+games17inc <- subset(games17inc, npitch>=50) # throw out games with less than 50 pitches
 
 umpid <- unique(pitches$umpID)
 numumps <- length(umpid)
@@ -25,6 +27,7 @@ aiACH7 <- numeric(numumps)
 accRB <- numeric(numumps) # season accuracy using rule-book rectangle
 accCZ <- numeric(numumps) # season accuracy using 2017 consensus zone
 errHD <- numeric(numumps) # Hausdorff distance from consensus KDE contours
+errSD <- numeric(numumps) # Area of symmetric difference with consensus KDE contours
 zsize <- numeric(numumps) # season zone size (area of KDE contour)
 rBB <- numeric(numumps) # walk rate
 rK <- numeric(numumps) # strikeout rate 
@@ -94,14 +97,27 @@ for(i in 1:numumps) {
                                       z=estimate,levels=cont["10%"])[[1]])
     szcontourdf[[s]] <- data.frame(px = szcontour[[s]]$x, pz = szcontour[[s]]$y)
   }
-  zsize[i] <- (abs(with(szcontour$L,polyarea(x,y))) + abs(with(szcontour$L,polyarea(x,y))))/2
-  errHD[i] <- hausdorff_dist(as.matrix(szcontourdf$L), as.matrix(upper90kde$L)) + 
-              hausdorff_dist(as.matrix(szcontourdf$R), as.matrix(upper90kde$R))  
+  
+  cpL <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(upper90kde$L))),ID="upL")))
+  cpR <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(upper90kde$R))),ID="upR")))
+  upL <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(szcontourdf$L))),ID="cpL")))
+  upR <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(szcontourdf$R))),ID="cpR")))
+
+  # Using rgeos:
+  zsize[i] <- (gArea(upL) + gArea(upR))/2
+  errHD[i] <- gDistance(cpL,upL, hausdorff = TRUE) + gDistance(cpR, upR, hausdorff = TRUE)
+  errSD[i] <- gArea(gSymdifference(cpL, upL)) + gArea(gSymdifference(cpR, upR))
+    
+  # Using pracma polyarea: 
+  # zsize[i] <- (abs(with(szcontour$L,polyarea(x,y))) + abs(with(szcontour$R,polyarea(x,y))))/2
+  # Using pracma hausdorff_dist: 
+  #errHD[i] <- hausdorff_dist(as.matrix(szcontourdf$L), as.matrix(upper90kde$L)) + 
+  #            hausdorff_dist(as.matrix(szcontourdf$R), as.matrix(upper90kde$R))  
   if((i %% 10) == 0) cat(".")
 }
 
 umps17 <- data.frame(umpid, umpname, ngames, npitch, aiR1, aiR10, aiIDX7, aiCH, aiACH7, 
-                     accRB, accCZ, errHD, zsize, rBB, rK)
+                     accRB, accCZ, errHD, errSD, zsize, rBB, rK)
 saveRDS(umps17, file="umps17.Rda")
 regularUmps17 <- umps17[umps17$ngames >= 20,]
 
