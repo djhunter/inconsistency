@@ -7,7 +7,7 @@ library(sp)
 library(rgeos)
 library(pracma)
 library(ks)
-# pitches <- as_data_frame(readRDS("pitches2017.Rda"))
+pitches <- as_data_frame(readRDS("pitches2017.Rda"))
 games17inc <- as_data_frame(readRDS("games17inc.Rda"))
 games17inc <- subset(games17inc, npitch>=50) # throw out games with less than 50 pitches
 
@@ -45,7 +45,7 @@ czonepoly <- readRDS("conzonepoly50.Rda")
 upper90kde <- readRDS("upper90kde17.Rda")
 
 for(i in 1:numumps) {
-#for(i in 1:2) { # for testing
+# for(i in 1:2) { # for testing
   uid <- umpid[i]
   pitchdata <- subset(pitches, umpID == uid)
   calledPitches <- pitchdata[pitchdata$des=="Ball" | 
@@ -113,6 +113,13 @@ for(i in 1:numumps) {
   # Using pracma hausdorff_dist: 
   #errHD[i] <- hausdorff_dist(as.matrix(szcontourdf$L), as.matrix(upper90kde$L)) + 
   #            hausdorff_dist(as.matrix(szcontourdf$R), as.matrix(upper90kde$R))  
+  
+  playdata <- pitchdata[!duplicated(pitchdata$play_guid.1),]
+  num_walks <- sum(playdata$event == "Walk")
+  rBB[i] <- num_walks/nrow(playdata)
+  num_ks <- sum(playdata$event == "Strikeout")
+  rK[i] <- num_ks/nrow(playdata)
+  
   if((i %% 10) == 0) cat(".")
 }
 
