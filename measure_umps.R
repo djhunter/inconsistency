@@ -96,7 +96,7 @@ for(i in 1:numumps) {
     H_scv[[s]] <- Hscv(x=stk[[s]])
     fhat[[s]] <- kde(x=stk[[s]], H=H_scv[[s]], compute.cont=TRUE)
     szcontour[[s]] <- with(fhat[[s]], contourLines(x=eval.points[[1]], y=eval.points[[2]],
-                                      z=estimate,levels=cont["10%"])[[1]])
+                                      z=estimate,levels=cont["5%"])[[1]])
     szcontourdf[[s]] <- data.frame(px = szcontour[[s]]$x, pz = szcontour[[s]]$y)
   }
   

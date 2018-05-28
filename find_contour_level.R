@@ -123,4 +123,9 @@ zsumps17 <- data.frame(umpid, umpname, ngames, npitch,
                      zs90, zs91, zs92, zs93, zs94, zs95, zs96, zs97, zs98, zs99)  
 regularZsUmps17 <- zsumps17[zsumps17$ngames >= 20,]
 
+#saveRDS(zsumps17, "zsumps17.Rda")
+
 # We want the contour whose area averages to about 3.780195 (area of aggregate 90% contour)
+# zsregumps <- zsumps17[zsumps17$ngames >=20,]
+# mean(zsregumps$zs95) ## 3.827738
+# Use the 95% contour for individual umpires
