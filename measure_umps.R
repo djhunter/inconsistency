@@ -39,9 +39,11 @@ rK <- numeric(numumps) # strikeout rate
 rbzoneX <- c(-0.8308333, 0.8308333, 0.8308333, -0.8308333)
 rbzoneY <- c(1.3775, 1.3775, 3.6225, 3.6225)
 
-# Consensus zones: convex hull of points that are called strikes
+# Consensus zone: convex hull of points that are called strikes
 # 50% or more of the time. Computed in con_zones_roeg_LR.R.
 czonepoly <- readRDS("conzonepoly50.Rda")
+# upper 90% contour of KDE of all strikes (L/R) for 2017
+# computed in consensus_zones_LR.R
 upper90kde <- readRDS("upper90kde17.Rda")
 
 for(i in 1:numumps) {
