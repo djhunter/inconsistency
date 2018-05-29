@@ -5,7 +5,8 @@ library(sp)
 library(rgeos)
 library(pracma)
 library(ks)
-pitches <- as_data_frame(readRDS("pitches2017.Rda"))
+library(ggplot2)
+#pitches <- as_data_frame(readRDS("pitches2017.Rda"))
 
 # Rule book zone: up/down pz's have been normalized to go from
 # 1.5 to 3.5. Width of baseball is 0.245 feet, so we add 1/2 of
@@ -21,9 +22,9 @@ czonepoly <- readRDS("conzonepoly50.Rda")
 # computed in consensus_zones_LR.R
 upper90kde <- readRDS("upper90kde17.Rda")
 
-uid <- 484198 # Alan Porter (most conforming SD)
-uid <- 427044 # CB Bucknor (least conforming SD)
-uid <- 427139 # Doug Eddings (largest)
+#uid <- 484198 # Alan Porter (most conforming SD)
+#uid <- 427044 # CB Bucknor (least conforming SD)
+#uid <- 427139 # Doug Eddings (largest)
 uid <- 427103 # Gerry Davis (smallest)
 
 pitchdata <- subset(pitches, umpID == uid)
@@ -49,8 +50,26 @@ for(s in c("L", "R")) {
   H_scv[[s]] <- Hscv(x=stk[[s]])
   fhat[[s]] <- kde(x=stk[[s]], H=H_scv[[s]], compute.cont=TRUE)
   szcontour[[s]] <- with(fhat[[s]], contourLines(x=eval.points[[1]], y=eval.points[[2]],
-                                    z=estimate,levels=cont["10%"])[[1]])
+                                    z=estimate,levels=cont["5%"])[[1]])
   szcontourdf[[s]] <- data.frame(px = szcontour[[s]]$x, pz = szcontour[[s]]$y)
 }
   
-# TODO: make plots of these zones
+strikePlot <- list(L=list(), R=list())
+ 
+s <- "L"
+strikePlot[[s]] <- ggplot() + 
+                     geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="red3") +
+                     geom_path(data=upper90kde[[s]], aes(x=px, y=pz), color="gray") +
+                     coord_fixed(xlim=c(-1.3,1.3), ylim=c(1.2,3.8)) + 
+                     theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
+                     ggtitle(umpname, subtitle="vs. left-handed batters")
+s <- "R"
+strikePlot[[s]] <- ggplot() + 
+                     geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="red3") +
+                     geom_path(data=upper90kde[[s]], aes(x=px, y=pz), color="gray") +
+                     coord_fixed(xlim=c(-1.3,1.3), ylim=c(1.2,3.8)) + 
+                     theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
+                     ggtitle(" ", subtitle="vs. right-handed batters")
+require(gridExtra)
+umpzones <- grid.arrange(strikePlot$L, strikePlot$R, ncol=2)
+#ggsave("figures/consensus_zones.pdf", plot = conzones, width = 8, height = 8, dpi = 300)
