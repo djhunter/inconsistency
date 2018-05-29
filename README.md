@@ -17,4 +17,4 @@ Many of the scripts take a long time to run, so results for the 2017 season are 
 |-----------|-------------------|
 | games17inc.Rda |  measure_games.R |
 | umps17.Rda |  measure_umps.R |
-| upper90kde17.Rda | consensus_zones_LR.R |
+| conzonepoly.Rda | consensus_zones.R |
