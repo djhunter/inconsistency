@@ -1,7 +1,10 @@
-# Compare ump zone to consensus zone
+# Compare ump KDE to consensus KDE
 library(dplyr)
 library(tibble)
-library(MASS)
+library(sp)
+library(rgeos)
+library(pracma)
+library(ks)
 library(ggplot2)
 #pitches <- as_data_frame(readRDS("pitches2017.Rda"))
 
@@ -12,14 +15,17 @@ library(ggplot2)
 rbzoneX <- c(-0.8308333, 0.8308333, 0.8308333, -0.8308333)
 rbzoneY <- c(1.3775, 1.3775, 3.6225, 3.6225)
 
-# Consensus zone: Pitches that are called strikes
-# 50% or more of the time. Computed in consensus_zones.R.
-czonepoly <- readRDS("conzonepoly.Rda")
+# Consensus zone: convex hull of points that are called strikes
+# 50% or more of the time. Computed in con_zones_roeg_LR.R.
+czonepoly <- readRDS("conzonepoly50.Rda")
+# upper 90% contour of KDE of all strikes (L/R) for 2017
+# computed in consensus_zones_LR.R
+upper90kde <- readRDS("upper90kde17.Rda")
 
-uid <- 484198 # Alan Porter (most conforming SD) #TODO: Check these!
+#uid <- 484198 # Alan Porter (most conforming SD)
 #uid <- 427044 # CB Bucknor (least conforming SD)
 #uid <- 427139 # Doug Eddings (largest)
-#uid <- 427103 # Gerry Davis (smallest)
+uid <- 427103 # Gerry Davis (smallest)
 
 pitchdata <- subset(pitches, umpID == uid)
 calledPitches <- pitchdata[pitchdata$des=="Ball" | 
@@ -35,24 +41,17 @@ balls <- calledPitches[calledPitches$des=="Ball" | calledPitches$des=="Ball In D
 strikes <- calledPitches[calledPitches$des=="Called Strike", c("px", "pz", "stand")]
   
 stk <- list(L=data_frame(), R=data_frame())
-bll <- list(L=data_frame(), R=data_frame())
-cp <- list(L=data_frame(), R=data_frame())
-stkKDE <- list(L=list(), R=list())
-cpKDE <- list(L=list(), R=list())
-czKDE <- list(L=list(), R=list())
+H_scv <- list(L = matrix(), R = matrix())
+fhat <- list(L=list(), R=list())
 szcontour <- list(L=list(), R=list())
 szcontourdf <- list(L=data.frame(), R=data.frame())
 for(s in c("L", "R")) {
   stk[[s]] <- strikes[strikes$stand==s,c("px","pz")]
-  bll[[s]] <- balls[balls$stand==s,c("px","pz")]
-  cp[[s]] <- calledPitches[calledPitches$stand==s,c("px","pz")]
-  stkKDE[[s]] <- kde2d(stk[[s]]$px, stk[[s]]$pz, n=200, lims = c(-2,2,0,5))
-  cpKDE[[s]] <- kde2d(cp[[s]]$px, cp[[s]]$pz, n=200, lims = c(-2,2,0,5))
-  czKDE[[s]] <- stkKDE[[s]]
-  czKDE[[s]]$z <- czKDE[[s]]$z/cpKDE[[s]]$z*nrow(stk$L)/nrow(cp$L)
-
-  szcontour[[s]] <- contourLines(czKDE[[s]], levels=0.5)
-  szcontourdf[[s]] <- data.frame(px = szcontour[[s]][[1]]$x, pz = szcontour[[s]][[1]]$y)
+  H_scv[[s]] <- Hscv(x=stk[[s]])
+  fhat[[s]] <- kde(x=stk[[s]], H=H_scv[[s]], compute.cont=TRUE)
+  szcontour[[s]] <- with(fhat[[s]], contourLines(x=eval.points[[1]], y=eval.points[[2]],
+                                    z=estimate,levels=cont["5%"])[[1]])
+  szcontourdf[[s]] <- data.frame(px = szcontour[[s]]$x, pz = szcontour[[s]]$y)
 }
   
 strikePlot <- list(L=list(), R=list())
@@ -60,16 +59,17 @@ strikePlot <- list(L=list(), R=list())
 s <- "L"
 strikePlot[[s]] <- ggplot() + 
                      geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="red3") +
-                     geom_path(data=czonepoly[[s]], aes(x=px, y=pz), color="gray") +
+                     geom_path(data=upper90kde[[s]], aes(x=px, y=pz), color="gray") +
                      coord_fixed(xlim=c(-1.3,1.3), ylim=c(1.2,3.8)) + 
                      theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
                      ggtitle(umpname, subtitle="vs. left-handed batters")
 s <- "R"
 strikePlot[[s]] <- ggplot() + 
                      geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="red3") +
-                     geom_path(data=czonepoly[[s]], aes(x=px, y=pz), color="gray") +
+                     geom_path(data=upper90kde[[s]], aes(x=px, y=pz), color="gray") +
                      coord_fixed(xlim=c(-1.3,1.3), ylim=c(1.2,3.8)) + 
                      theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
                      ggtitle(" ", subtitle="vs. right-handed batters")
 require(gridExtra)
 umpzones <- grid.arrange(strikePlot$L, strikePlot$R, ncol=2)
+#ggsave("figures/consensus_zones.pdf", plot = conzones, width = 8, height = 8, dpi = 300)

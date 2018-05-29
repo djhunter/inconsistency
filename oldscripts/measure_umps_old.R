@@ -6,6 +6,7 @@ library(tibble)
 library(sp)
 library(rgeos)
 library(pracma)
+library(ks)
 pitches <- as_data_frame(readRDS("pitches2017.Rda"))
 games17inc <- as_data_frame(readRDS("games17inc.Rda"))
 games17inc <- subset(games17inc, npitch>=50) # throw out games with less than 50 pitches
@@ -38,12 +39,15 @@ rK <- numeric(numumps) # strikeout rate
 rbzoneX <- c(-0.8308333, 0.8308333, 0.8308333, -0.8308333)
 rbzoneY <- c(1.3775, 1.3775, 3.6225, 3.6225)
 
-# Consensus zone: Pitches that are called strikes
-# 50% or more of the time. Computed in consensus_zones.R.
-czonepoly <- readRDS("conzonepoly.Rda")
+# Consensus zone: convex hull of points that are called strikes
+# 50% or more of the time. Computed in con_zones_roeg_LR.R.
+czonepoly <- readRDS("conzonepoly50.Rda")
+# upper 90% contour of KDE of all strikes (L/R) for 2017
+# computed in consensus_zones_LR.R
+upper90kde <- readRDS("upper90kde17.Rda")
 
 for(i in 1:numumps) {
-#for(i in 1:2) { # for testing
+# for(i in 1:2) { # for testing
   uid <- umpid[i]
   pitchdata <- subset(pitches, umpID == uid)
   calledPitches <- pitchdata[pitchdata$des=="Ball" | 
@@ -82,36 +86,35 @@ for(i in 1:numumps) {
                                     czonepoly$R$px, czonepoly$R$pz))) /
               npitch[i]
   
-stk <- list(L=data_frame(), R=data_frame())
-bll <- list(L=data_frame(), R=data_frame())
-cp <- list(L=data_frame(), R=data_frame())
-stkKDE <- list(L=list(), R=list())
-cpKDE <- list(L=list(), R=list())
-czKDE <- list(L=list(), R=list())
-szcontour <- list(L=list(), R=list())
-szcontourdf <- list(L=data.frame(), R=data.frame())
-for(s in c("L", "R")) {
-  stk[[s]] <- strikes[strikes$stand==s,c("px","pz")]
-  bll[[s]] <- balls[balls$stand==s,c("px","pz")]
-  cp[[s]] <- calledPitches[calledPitches$stand==s,c("px","pz")]
-  stkKDE[[s]] <- kde2d(stk[[s]]$px, stk[[s]]$pz, n=200, lims = c(-2,2,0,5))
-  cpKDE[[s]] <- kde2d(cp[[s]]$px, cp[[s]]$pz, n=200, lims = c(-2,2,0,5))
-  czKDE[[s]] <- stkKDE[[s]]
-  czKDE[[s]]$z <- czKDE[[s]]$z/cpKDE[[s]]$z*nrow(stk$L)/nrow(cp$L)
-
-  szcontour[[s]] <- contourLines(czKDE[[s]], levels=0.5)
-  szcontourdf[[s]] <- data.frame(px = szcontour[[s]][[1]]$x, pz = szcontour[[s]][[1]]$y)
-}
+  stk <- list(L=data_frame(), R=data_frame())
+  H_scv <- list(L = matrix(), R = matrix())
+  fhat <- list(L=list(), R=list())
+  szcontour <- list(L=list(), R=list())
+  szcontourdf <- list(L=data.frame(), R=data.frame())
+  for(s in c("L", "R")) {
+    stk[[s]] <- strikes[strikes$stand==s,c("px","pz")]
+    H_scv[[s]] <- Hscv(x=stk[[s]])
+    fhat[[s]] <- kde(x=stk[[s]], H=H_scv[[s]], compute.cont=TRUE)
+    szcontour[[s]] <- with(fhat[[s]], contourLines(x=eval.points[[1]], y=eval.points[[2]],
+                                      z=estimate,levels=cont["5%"])[[1]])
+    szcontourdf[[s]] <- data.frame(px = szcontour[[s]]$x, pz = szcontour[[s]]$y)
+  }
   
-  cpL <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(czonepoly$L))),ID="cpL")))
-  cpR <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(czonepoly$R))),ID="cpR")))
-  upL <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(szcontourdf$L))),ID="upL")))
-  upR <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(szcontourdf$R))),ID="upR")))
+  cpL <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(upper90kde$L))),ID="upL")))
+  cpR <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(upper90kde$R))),ID="upR")))
+  upL <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(szcontourdf$L))),ID="cpL")))
+  upR <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(szcontourdf$R))),ID="cpR")))
 
   # Using rgeos:
   zsize[i] <- (gArea(upL) + gArea(upR))/2
   errHD[i] <- gDistance(cpL,upL, hausdorff = TRUE) + gDistance(cpR, upR, hausdorff = TRUE)
   errSD[i] <- gArea(gSymdifference(cpL, upL)) + gArea(gSymdifference(cpR, upR))
+    
+  # Using pracma polyarea: 
+  # zsize[i] <- (abs(with(szcontour$L,polyarea(x,y))) + abs(with(szcontour$R,polyarea(x,y))))/2
+  # Using pracma hausdorff_dist: 
+  #errHD[i] <- hausdorff_dist(as.matrix(szcontourdf$L), as.matrix(upper90kde$L)) + 
+  #            hausdorff_dist(as.matrix(szcontourdf$R), as.matrix(upper90kde$R))  
   
   playdata <- pitchdata[!duplicated(pitchdata$play_guid.1),]
   num_walks <- sum(playdata$event == "Walk")

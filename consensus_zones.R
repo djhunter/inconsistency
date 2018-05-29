@@ -1,4 +1,5 @@
 library(ggplot2)
+library(MASS)
 library(dplyr)
 library(tibble)
 pitches <- as_data_frame(readRDS("pitches2017.Rda"))
@@ -26,8 +27,8 @@ for(s in c("L", "R")) {
   stk[[s]] <- strikes[strikes$stand==s,c("px","pz")]
   bll[[s]] <- balls[balls$stand==s,c("px","pz")]
   cp[[s]] <- calledPitches[calledPitches$stand==s,c("px","pz")]
-  stkKDE[[s]] <- kde2d(stk[[s]]$px, stk[[s]]$pz, n=100, lims = c(-2,2,0,5))
-  cpKDE[[s]] <- kde2d(cp[[s]]$px, cp[[s]]$pz, n=100, lims = c(-2,2,0,5))
+  stkKDE[[s]] <- kde2d(stk[[s]]$px, stk[[s]]$pz, n=200, lims = c(-2,2,0,5))
+  cpKDE[[s]] <- kde2d(cp[[s]]$px, cp[[s]]$pz, n=200, lims = c(-2,2,0,5))
   czKDE[[s]] <- stkKDE[[s]]
   czKDE[[s]]$z <- czKDE[[s]]$z/cpKDE[[s]]$z*nrow(stk$L)/nrow(cp$L)
 
