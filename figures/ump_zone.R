@@ -21,9 +21,10 @@ czonepoly <- readRDS("conzonepoly50.Rda")
 # computed in consensus_zones_LR.R
 upper90kde <- readRDS("upper90kde17.Rda")
 
-uid <- 427344 # Bill Miller (most conforming)
-uid <- 427103 # Gerry Davis (least conforming and smallest)
+uid <- 484198 # Alan Porter (most conforming SD)
+uid <- 427044 # CB Bucknor (least conforming SD)
 uid <- 427139 # Doug Eddings (largest)
+uid <- 427103 # Gerry Davis (smallest)
 
 pitchdata <- subset(pitches, umpID == uid)
 calledPitches <- pitchdata[pitchdata$des=="Ball" | 
@@ -52,4 +53,4 @@ for(s in c("L", "R")) {
   szcontourdf[[s]] <- data.frame(px = szcontour[[s]]$x, pz = szcontour[[s]]$y)
 }
   
-
+# TODO: make plots of these zones
