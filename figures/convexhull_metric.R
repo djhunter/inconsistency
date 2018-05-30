@@ -50,5 +50,5 @@ ebzlplot <- ggplot() +
             coord_fixed(xlim=c(-1.7,1.7), ylim=c(0.8,4.2)) + 
             theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
             ggtitle(prettyGID(gameID), subtitle="vs. left-handed batters")
-# ggsave("figures/convexhull_metric.pdf", plot = grid.arrange(ebzlplot, ebzrplot, ncol=2), 
-#       width = 7, height = 4, dpi = 300)
+ggsave("figures/convexhull_metric.pdf", plot = grid.arrange(ebzlplot, ebzrplot, ncol=2), 
+       width = 7, height = 4, dpi = 300)

@@ -16,10 +16,10 @@ rbzoneY <- c(1.3775, 1.3775, 3.6225, 3.6225)
 # 50% or more of the time. Computed in consensus_zones.R.
 czonepoly <- readRDS("conzonepoly.Rda")
 
-uid <- 484198 # Alan Porter (most conforming SD) #TODO: Check these!
-#uid <- 427044 # CB Bucknor (least conforming SD)
-#uid <- 427139 # Doug Eddings (largest)
-#uid <- 427103 # Gerry Davis (smallest)
+#uid <- 521889 # Stu Scheurwater (most conforming SD)
+#uid <- 427128 # Rob Drake (least conforming SD)
+uid <- 427139 # Doug Eddings (largest)
+#uid <- 427339 # Jerry Meals (smallest)
 
 pitchdata <- subset(pitches, umpID == uid)
 calledPitches <- pitchdata[pitchdata$des=="Ball" | 
@@ -59,15 +59,15 @@ strikePlot <- list(L=list(), R=list())
  
 s <- "L"
 strikePlot[[s]] <- ggplot() + 
-                     geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="red3") +
                      geom_path(data=czonepoly[[s]], aes(x=px, y=pz), color="gray") +
+                     geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="red3") +
                      coord_fixed(xlim=c(-1.3,1.3), ylim=c(1.2,3.8)) + 
                      theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
                      ggtitle(umpname, subtitle="vs. left-handed batters")
 s <- "R"
 strikePlot[[s]] <- ggplot() + 
-                     geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="red3") +
                      geom_path(data=czonepoly[[s]], aes(x=px, y=pz), color="gray") +
+                     geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="red3") +
                      coord_fixed(xlim=c(-1.3,1.3), ylim=c(1.2,3.8)) + 
                      theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
                      ggtitle(" ", subtitle="vs. right-handed batters")

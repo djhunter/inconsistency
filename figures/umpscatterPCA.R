@@ -8,10 +8,10 @@ pca1 <- prcomp(regularUmps17[,c(5,6,8:11,14,15,16)], scale=TRUE)
 
 # Figures for the paper:
 # xtable(cor(umpdf[,c(11,7,8,6)]))
-# xtable(pca$rotation)
+# xtable(pca1$rotation)
 # xtable(cor(umpdf[,c(6,11,9,12,10)]))
 
-umpscat1 <- ggplot(regularUmps17, aes(y=accCZ, x=(aiR10+aiACH7), label=umpname))+xlim(0.12,0.28)+
+umpscat1 <- ggplot(regularUmps17, aes(y=(accCZ+accRB)/2, x=(aiR10+aiACH7), label=umpname))+xlim(0.12,0.28)+
    geom_point(alpha=0) +geom_text(aes(label=umpname),hjust=0.5, vjust=0.0, size=7)+
    labs(y="Accuracy", x = "Inconsistency")+
    theme(axis.text=element_text(size=18), axis.title=element_text(size=24,face="bold"))
