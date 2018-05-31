@@ -18,7 +18,6 @@ library(alphahull)
 #' inconConvex("gid_2017_08_12_chnmlb_arimlb_1")
 inconConvex <- function(gameID) {
   pitchdata <- subset(pitches, gameday_link == gameID)
-  optimize_alpha = is.null(alpha)
   # normalize up/down locations based on height of batter. Zone goes from 1.5 to 3.5.
   pitchdata$pz <- 2.0*(pitchdata$pz-pitchdata$sz_top)/(pitchdata$sz_top-pitchdata$sz_bot)+3.5
   Lpitchdata <- subset(pitchdata, stand=="L")
