@@ -65,5 +65,5 @@ for(i in 1:n) {
               ggtitle(bquote(alpha == .(alph[i])))
 }
 
-ggsave("figures/different_alphas.pdf", plot = do.call("grid.arrange", c(aplots, ncol=n)), 
-       width = 16, height = 3, dpi = 300)
+ggsave("figures/different_alphas.pdf", plot = do.call("grid.arrange", c(aplots, ncol=n %/% 2)), 
+       width = 8, height = 6, dpi = 300)
