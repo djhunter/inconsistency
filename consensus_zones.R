@@ -35,26 +35,25 @@ for(s in c("L", "R")) {
   szcontour[[s]] <- contourLines(czKDE[[s]], levels=0.5)
   szcontourdf[[s]] <- data.frame(px = szcontour[[s]][[1]]$x, pz = szcontour[[s]][[1]]$y)
 }
-saveRDS(szcontourdf, "conzonepoly.Rda")
+#saveRDS(szcontourdf, "conzonepoly.Rda")
 
 strikePlot <- list(L=list(), R=list())
 ballPlot <- list(L=list(), R=list())
  
 for(s in c("L", "R")) {
-  strikePlot[[s]] <- ggplot() + # geom_point(data=stk[[s]], aes(x=px,y=pz), alpha=0.01, color="red3", size=3, stroke=1) +
+  strikePlot[[s]] <- ggplot() + geom_point(data=stk[[s]], aes(x=px,y=pz), alpha=0.01, color="red3", size=3, stroke=1) +
                      geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="black") +
                      coord_fixed(xlim=c(-1.5,1.5), ylim=c(1.0,4)) + 
                      theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank())
-  ballPlot[[s]] <- ggplot() + # geom_point(data=bll[[s]], aes(x=px,y=pz), alpha=0.01, color="blue", size=3, stroke=1) +
+  ballPlot[[s]] <- ggplot() + geom_point(data=bll[[s]], aes(x=px,y=pz), alpha=0.01, color="blue", size=3, stroke=1) +
                    geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="black") +
                    coord_fixed(xlim=c(-1.5,1.5), ylim=c(1.0,4)) + 
                    theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank())
 }
 require(gridExtra)
-conzones <- grid.arrange(strikePlot$L, strikePlot$R, ncol=2)
 
-#conzones <- grid.arrange(strikePlot$L, strikePlot$R, ballPlot$L, ballPlot$R, ncol=2)
-#ggsave("figures/consensus_zones.pdf", plot = conzones, width = 8, height = 8, dpi = 300)
+conzones <- grid.arrange(strikePlot$L, strikePlot$R, ballPlot$L, ballPlot$R, ncol=2)
+ggsave("figures/consensus_zones.pdf", plot = conzones, width = 8, height = 8, dpi = 300)
 
 # to reduce size:
 # pdf2ps consensus_zones.pdf consensus_zones.eps

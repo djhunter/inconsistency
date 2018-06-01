@@ -6,9 +6,11 @@ library(tibble)
 library(sp)
 library(rgeos)
 library(pracma)
+library(MASS)
 pitches <- as_data_frame(readRDS("pitches2017.Rda"))
 games17inc <- as_data_frame(readRDS("games17inc.Rda"))
 games17inc <- subset(games17inc, npitch>=50) # throw out games with less than 50 pitches
+games17inc <- subset(games17inc, npitch<=300) # throw out games with more than 300 pitches
 
 umpid <- unique(pitches$umpID)
 numumps <- length(umpid)

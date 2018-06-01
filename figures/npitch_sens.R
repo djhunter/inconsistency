@@ -5,6 +5,8 @@ games17inc <- as_data_frame(readRDS("games17inc.Rda"))
 games17inc <- subset(games17inc, npitch>=50) # throw out games with less than 50 pitches
 games17inc <- subset(games17inc, npitch<=300) # throw out games with more than 300 pitches
 
+print(cor(games17inc[,c(4,5,6,8,9)]))
+
 incR1plot <- ggplot(games17inc, aes(x=npitch, y=incR1)) + geom_point(size = 0.5) +
               geom_smooth(method="loess") +
               labs(x = NULL, y=expression(italic(I[R1]))) + theme_bw() +
@@ -27,6 +29,7 @@ incACH7plot <- ggplot(games17inc, aes(x=npitch, y=incACH7)) + geom_point(size = 
               ggtitle(" ")
 
 games17inc <- subset(games17inc, incR10+incACH7>0.3) # Consider the most inconsistent games
+print(cor(games17inc[,c(4,5,6,8,9)]))
 
 iincR1plot <- ggplot(games17inc, aes(x=npitch, y=incR1)) + geom_point(size = 0.5) +
               geom_smooth(method="loess") +
