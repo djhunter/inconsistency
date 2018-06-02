@@ -17,3 +17,6 @@ compare_alpha <- readRDS("compare_alpha.Rda")
 apply(compare_alpha[,c(5:11)], 2, mean)
 apply(compare_alpha[,c(5:11)], 2, sd)
 xtable(cor(compare_alpha[,c(6:11)]))
+
+umps17 <- readRDS("umps17.Rda")
+regularUmps17 <- umps17[umps17$ngames >= 20,]
