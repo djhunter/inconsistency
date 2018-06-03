@@ -30,12 +30,13 @@ for(s in c("L", "R")) {
   stkKDE[[s]] <- kde2d(stk[[s]]$px, stk[[s]]$pz, n=200, lims = c(-2,2,0,5))
   cpKDE[[s]] <- kde2d(cp[[s]]$px, cp[[s]]$pz, n=200, lims = c(-2,2,0,5))
   czKDE[[s]] <- stkKDE[[s]]
-  czKDE[[s]]$z <- czKDE[[s]]$z/cpKDE[[s]]$z*nrow(stk$L)/nrow(cp$L)
+  czKDE[[s]]$z <- czKDE[[s]]$z/cpKDE[[s]]$z*nrow(stk[[s]])/nrow(cp[[s]])
 
   szcontour[[s]] <- contourLines(czKDE[[s]], levels=0.5)
   szcontourdf[[s]] <- data.frame(px = szcontour[[s]][[1]]$x, pz = szcontour[[s]][[1]]$y)
 }
 saveRDS(szcontourdf, "conzonepoly.Rda")
+saveRDS(czKDE, "conczKDE.Rda")
 
 # strikePlot <- list(L=list(), R=list())
 # ballPlot <- list(L=list(), R=list())

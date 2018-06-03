@@ -29,6 +29,7 @@ accRB <- numeric(numumps) # season accuracy using rule-book rectangle
 accCZ <- numeric(numumps) # season accuracy using 2017 consensus zone
 errHD <- numeric(numumps) # Hausdorff distance from consensus KDE contours
 errSD <- numeric(numumps) # Area of symmetric difference with consensus KDE contours
+czMAD <- numeric(numumps) # mean absolute difference of sample of CDF estimates
 zsize <- numeric(numumps) # season zone size (area of KDE contour)
 rBB <- numeric(numumps) # walk rate
 rK <- numeric(numumps) # strikeout rate 
@@ -43,6 +44,7 @@ rbzoneY <- c(1.3775, 1.3775, 3.6225, 3.6225)
 # Consensus zone: Pitches that are called strikes
 # 50% or more of the time. Computed in consensus_zones.R.
 czonepoly <- readRDS("conzonepoly.Rda")
+conczKDE <- readRDS("conczKDE.Rda")
 
 for(i in 1:numumps) {
 #for(i in 1:2) { # for testing
@@ -99,7 +101,7 @@ for(s in c("L", "R")) {
   stkKDE[[s]] <- kde2d(stk[[s]]$px, stk[[s]]$pz, n=200, lims = c(-2,2,0,5))
   cpKDE[[s]] <- kde2d(cp[[s]]$px, cp[[s]]$pz, n=200, lims = c(-2,2,0,5))
   czKDE[[s]] <- stkKDE[[s]]
-  czKDE[[s]]$z <- czKDE[[s]]$z/cpKDE[[s]]$z*nrow(stk$L)/nrow(cp$L)
+  czKDE[[s]]$z <- czKDE[[s]]$z/cpKDE[[s]]$z*nrow(stk[[s]])/nrow(cp[[s]])
 
   szcontour[[s]] <- contourLines(czKDE[[s]], levels=0.5)
   szcontourdf[[s]] <- data.frame(px = szcontour[[s]][[1]]$x, pz = szcontour[[s]][[1]]$y)
@@ -114,6 +116,7 @@ for(s in c("L", "R")) {
   zsize[i] <- (gArea(upL) + gArea(upR))/2
   errHD[i] <- gDistance(cpL,upL, hausdorff = TRUE) + gDistance(cpR, upR, hausdorff = TRUE)
   errSD[i] <- gArea(gSymdifference(cpL, upL)) + gArea(gSymdifference(cpR, upR))
+  czMAD[i] <- mean(abs(czKDE$L$z-conczKDE$L$z)) + mean(abs(czKDE$R$z-conczKDE$R$z))
   
   playdata <- pitchdata[!duplicated(pitchdata$play_guid.1),]
   num_walks <- sum(playdata$event == "Walk")
