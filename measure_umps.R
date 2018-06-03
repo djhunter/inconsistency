@@ -128,7 +128,7 @@ for(s in c("L", "R")) {
 }
 
 umps17 <- data.frame(umpid, umpname, ngames, npitch, aiR1, aiR10, aiIDX7, aiCH, aiACH7, 
-                     accRB, accCZ, errHD, errSD, zsize, rBB, rK)
+                     accRB, accCZ, errHD, errSD, czMAD, zsize, rBB, rK)
 saveRDS(umps17, file="umps17.Rda")
 regularUmps17 <- umps17[umps17$ngames >= 20,]
 
