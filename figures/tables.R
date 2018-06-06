@@ -20,3 +20,4 @@ xtable(cor(compare_alpha[,c(6:11)]))
 
 umps17 <- readRDS("umps17.Rda")
 regularUmps17 <- umps17[umps17$ngames >= 20,]
+cor(regularUmps17[,c(10,11,12,16)])

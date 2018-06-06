@@ -27,6 +27,7 @@ aiACH7 <- numeric(numumps)
 
 accRB <- numeric(numumps) # season accuracy using rule-book rectangle
 accCZ <- numeric(numumps) # season accuracy using 2017 consensus zone
+accS <- numeric(numumps) # season accuracy using 2017 umpire's zone (self-accuracy)
 errHD <- numeric(numumps) # Hausdorff distance from consensus KDE contours
 errSD <- numeric(numumps) # Area of symmetric difference with consensus KDE contours
 czMAD <- numeric(numumps) # mean absolute difference of sample of CDF estimates
@@ -107,6 +108,20 @@ for(s in c("L", "R")) {
   szcontourdf[[s]] <- data.frame(px = szcontour[[s]][[1]]$x, pz = szcontour[[s]][[1]]$y)
 }
   
+  accS[i] <- (sum(point.in.polygon(subset(strikes, stand == "L")$px,
+                                    subset(strikes, stand == "L")$pz,
+                                    szcontourdf$L$px, szcontourdf$L$pz)) +
+               sum(point.in.polygon(subset(strikes, stand == "R")$px,
+                                    subset(strikes, stand == "R")$pz,
+                                    szcontourdf$R$px, szcontourdf$R$pz)) +
+               nrow(balls) -
+               sum(point.in.polygon(subset(balls, stand == "L")$px,
+                                    subset(balls, stand == "L")$pz,
+                                    szcontourdf$L$px, szcontourdf$L$pz)) -
+               sum(point.in.polygon(subset(balls, stand == "R")$px,
+                                    subset(balls, stand == "R")$pz,
+                                    szcontourdf$R$px, szcontourdf$R$pz))) /
+              npitch[i]
   cpL <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(czonepoly$L))),ID="cpL")))
   cpR <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(czonepoly$R))),ID="cpR")))
   upL <- SpatialPolygons(list(Polygons(list(Polygon(as.matrix(szcontourdf$L))),ID="upL")))
@@ -128,7 +143,7 @@ for(s in c("L", "R")) {
 }
 
 umps17 <- data.frame(umpid, umpname, ngames, npitch, aiR1, aiR10, aiIDX7, aiCH, aiACH7, 
-                     accRB, accCZ, errHD, errSD, czMAD, zsize, rBB, rK)
+                     accRB, accCZ, accS, errHD, errSD, czMAD, zsize, rBB, rK)
 saveRDS(umps17, file="umps17.Rda")
 regularUmps17 <- umps17[umps17$ngames >= 20,]
 

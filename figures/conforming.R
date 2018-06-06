@@ -78,4 +78,4 @@ for(uid in c(uid1, uid2)) {
 }
 require(gridExtra)
 umpzones <- grid.arrange(uplots$u1$L, uplots$u1$R, uplots$u2$L, uplots$u2$R, ncol=4)
-ggsave("figures/conforming.pdf", plot = umpzones, width = 12, height = 6, dpi = 300)
+ggsave("figures/conforming.pdf", plot = umpzones, width = 8, height = 2.6, dpi = 300)
