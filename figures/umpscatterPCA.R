@@ -19,8 +19,11 @@ ggsave("figures/umpscatter1.pdf", plot = umpscat1, width = 18, height = 26, dpi 
 
 umpscat2 <- autoplot(pca1, label=TRUE, label.size=7, label.hjust=0.4, label.vjust=0.0, shape=FALSE, xlim=c(-0.27,0.27),
          xlab = "Strike Zone Quality", ylab = "Pitcher Friendliness")+
+         geom_hline(yintercept=0) +
+         geom_vline(xintercept=0) +
          theme_minimal() +
-         theme(axis.text=element_text(size=18),axis.title=element_text(size=24)) 
+         theme(axis.text=element_text(size=18),axis.title=element_text(size=24),
+               axis.title.y = element_text(hjust=0.395)) 
 ggsave("figures/umpscatter2.pdf", plot = umpscat2, width = 18, height = 26, dpi = 300)
 
 # with(regularUmps17, cor(accCZ, aiR10 + aiACH7)) # -0.58
