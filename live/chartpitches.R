@@ -1,9 +1,16 @@
 # produce a pitch chart of any game (including in progress)
-gid <- "gid_2018_06_10_pitmlb_chnmlb_1" 
-
+gid <- "gid_2018_06_15_sdnmlb_atlmlb_1" 
+#gid <- "gid_2018_06_15_tbamlb_nyamlb_1" 
 library(dplyr)
 library(tibble)
-library(mlbgameday)
+gameIDs <- gid
+library(pitchRx)
+gamedata <- scrape(game.ids = gameIDs, suffix = "inning/inning_all.xml")
+playerdata <- scrape(game.ids = gameIDs, suffix = "players.xml")
+pitches <- inner_join(gamedata$pitch, gamedata$atbat, by = c("num", "gameday_link"))
+hpus <- subset(playerdata$umpire, position=="home")[, c("name", "id", "gameday_link")]
+names(hpus) <- c("umpName", "umpID", "gameday_link")
+pitches <- inner_join(pitches, hpus, by="gameday_link")
 
 # source('makePitchesTbl.R') # get pitches data frame
 source('inconrect.R')
