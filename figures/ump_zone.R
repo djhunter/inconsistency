@@ -18,8 +18,11 @@ czonepoly <- readRDS("conzonepoly.Rda")
 
 #uid <- 521889 # Stu Scheurwater (most conforming SD)
 #uid <- 427128 # Rob Drake (least conforming SD)
-uid <- 427139 # Doug Eddings (largest)
+#uid <- 427139 # Doug Eddings (largest)
 #uid <- 427339 # Jerry Meals (smallest)
+uid <- 431232 # Chad Fairchild (consistent ACH but not Rect)
+uid <- 484183 # Cory Blaser (consistent but nonrectangular)
+uid <- 489985 # Chad Whitson
 
 pitchdata <- subset(pitches, umpID == uid)
 calledPitches <- pitchdata[pitchdata$des=="Ball" | 
