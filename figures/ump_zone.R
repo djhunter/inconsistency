@@ -23,6 +23,8 @@ czonepoly <- readRDS("conzonepoly.Rda")
 uid <- 431232 # Chad Fairchild (consistent ACH but not Rect)
 uid <- 484183 # Cory Blaser (consistent but nonrectangular)
 uid <- 489985 # Chad Whitson
+uid <- 427197 # Chris Guccione
+uid <- 573596 # Pat Hoberg
 
 pitchdata <- subset(pitches, umpID == uid)
 calledPitches <- pitchdata[pitchdata$des=="Ball" | 
