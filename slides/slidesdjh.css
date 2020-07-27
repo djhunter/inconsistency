@@ -1,0 +1,40 @@
+.reveal strong,
+.reveal b {
+  font-weight: bold;
+  color: Yellow; 
+}
+
+.reveal em {
+  font-style: italic; 
+  color: Orange;
+}
+  
+.reveal p {
+  margin: 20px 0;
+  line-height: 1.3; 
+  text-align: left;
+}
+
+.col2 {
+    -webkit-columns: 2 250px; /* chrome, safari */
+    -moz-columns: 2 250px;    /* firefox */
+    columns: 2 250px;         /* number of columns and width in pixels*/
+}
+
+.col3 {
+    -webkit-columns: 3 100px;
+    -moz-columns: 3 100px;
+    columns: 3 100px;
+}
+
+.column-left {
+  float: left;
+  width: 50%;
+  text-align: left;
+}
+
+.column-right {
+  float: right;
+  width: 50%;
+  text-align: left;
+}

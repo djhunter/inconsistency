@@ -1,0 +1,46 @@
+---
+title: "New metrics for evaluating home plate umpire consistency and accuracy"
+date: "August 5, 2020"
+author: "David J. Hunter, Westmont College"
+output: 
+  revealjs::revealjs_presentation:
+    fig_width: 14
+    fig_height: 7
+    self_contained: true
+    theme: night
+    highlight: zenburn
+    css: slidesdjh.css
+    center: false
+    transition: slide
+    reveal_options:
+      controls: true
+      progress: false
+      width: 1080
+      height: 600
+---
+
+# Introduction
+
+## How strikes are called {data-background="allpitches.png" data-background-size="contain"}
+
+## Rectangular established zone
+
+![](rectzone.png){#id .class width=100% height=100%}
+
+## MA-5 Topics I cover
+
+- One proportion and one mean
+- Two proportions and two means (independent samples and paired)
+- Multiple proportions ($\chi^2$)
+- Multiple means (ANOVA)
+- Regression and Correlation
+- Multiple linear regression
+- MANOVA, Factorial ANOVA, Logistic Regression (optional)
+
+>- *Nonparametric Resampling Techniques for all of the above*
+
+
+
+
+
+
