@@ -42,9 +42,9 @@ inconRect <- function(gameID, layers = 3) {
   ymin_r <- yrhh[1:rlay]
   ymax_l <- ylhh[length(ylhh):(length(ylhh)-llay+1)]
   ymax_r <- yrhh[length(yrhh):(length(yrhh)-rlay+1)]
-  incR <- (sum(sapply(1:rlay, function(i) 
+  incR <- (sum(sapply(seq_along(rlay), function(i) 
     {Rballs$px < xmax_r[i] & Rballs$px > xmin_r[i] & Rballs$pz > ymin_r[i] & Rballs$pz < ymax_r[i]})) +
-          sum(sapply(1:llay, function(i) 
+          sum(sapply(seq_along(llay), function(i) 
     {Lballs$px < xmax_l[i] & Lballs$px > xmin_l[i] & Lballs$pz > ymin_l[i] & Lballs$pz < ymax_l[i]}))) /
             (nrow(Lballs) + nrow(Rballs))
   M_lhh <- cbind(xmin_l, ymin_l, xmax_l, ymax_l)

@@ -134,6 +134,7 @@ for(s in c("L", "R")) {
   czMAD[i] <- mean(abs(czKDE$L$z-conczKDE$L$z)) + mean(abs(czKDE$R$z-conczKDE$R$z))
   
   playdata <- pitchdata[!duplicated(pitchdata$play_guid.1),]
+ # playdata <- pitchdata[!duplicated(pitchdata$ab_id),] # TODO: add play_guid.1 column
   num_walks <- sum(playdata$event == "Walk")
   rBB[i] <- num_walks/nrow(playdata)
   num_ks <- sum(playdata$event == "Strikeout")

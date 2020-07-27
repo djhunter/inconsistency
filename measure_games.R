@@ -29,7 +29,8 @@ for(i in 1:numgames) {
   calledPitches <- pitchdata[pitchdata$des=="Ball" | 
                              pitchdata$des=="Ball In Dirt" | 
                              pitchdata$des=="Called Strike", c("px","pz")]
-  calledPitches <- calledPitches[!is.na(calledPitches[,1]),]
+  # calledPitches <- calledPitches[!is.na(calledPitches[,1]),] # deprecated
+  calledPitches <- calledPitches[!is.na(calledPitches$px),]
   npitch[i] <- nrow(calledPitches)
   if(npitch[i] > 0) {
     incR1[i] <- inconRect(gid[i], layers = 1)$incR 
@@ -46,7 +47,7 @@ for(i in 1:numgames) {
 
 games17inc <- data.frame(gid, umpname, umpid, npitch, incR1, incR10,
                          incIDX7, incCH, incACH7)
-saveRDS(games17inc, file="games17inc.Rda")
+#saveRDS(games17inc, file="games17inc.Rda")
 
 #pairs(games17[,c(5,7,8,9,10,11,12,13)], pch=".", upper.panel=panel.smooth)
 #pairs(games17[,5:9], pch=".", upper.panel = panel.smooth)
