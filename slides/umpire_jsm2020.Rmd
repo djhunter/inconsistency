@@ -17,27 +17,120 @@ output:
       progress: false
       width: 1080
       height: 600
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    df_print: paged
+    theme: spacelab
 ---
 
 # Introduction
 
-## How strikes are called {data-background="allpitches.png" data-background-size="contain"}
+##  {data-background="allpitches.png" data-background-size="contain"}
 
-## Rectangular established zone
+## Consistency vs. Accuracy
 
-![](rectzone.png){#id .class width=100% height=100%}
+- "Rulebook" Zone: Rectangle (not actually).
+- "Consensus" Zone: What historically has been enforced.
+    - Rounded corners
+    - Different for Left/Right batters
+- *Consistency* more important (as important) as fidelity to rectangle?
+    - How should umpires be evaluated?
+    - How should the robots be tuned?
 
-## MA-5 Topics I cover
+```{r echo=FALSE, fig.align='center', out.width='100%'}
+knitr::include_graphics("allpitchessmall.png")
+```
 
-- One proportion and one mean
-- Two proportions and two means (independent samples and paired)
-- Multiple proportions ($\chi^2$)
-- Multiple means (ANOVA)
-- Regression and Correlation
-- Multiple linear regression
-- MANOVA, Factorial ANOVA, Logistic Regression (optional)
+# Measuring Inconsistency
 
->- *Nonparametric Resampling Techniques for all of the above*
+## Assumptions
+
+- Over the course of a game, umpires *establish* a strike zone.
+    - Should be consistent.
+    - Should be a rectangle?
+    - Or just convex?
+
+## One-rectangle inconsistency index
+
+- *Established strike zone:* The smallest rectangle containing all the strikes.
+- Balls in the established strike zone are inconsistent.
+- $I_{R1} = \frac{\text{number of inconsistent balls}}{\text{total number of called balls}} = \frac{2+13}{110} \approx 0.136$
+
+```{r echo=FALSE, fig.align='center', out.width='70%'}
+knitr::include_graphics("rectzone.png")
+```
+
+## Problems with $I_{R10}$
+
+- Very sensitive to a single outlying strike.
+    - e.g., lowest strike on right: removing eliminates 3 inconsistent balls.
+- Fails to account for multiple bad strike calls in the same location.
+    - e.g., leftmost strike has no effect.
+    
+```{r echo=FALSE, fig.align='center', out.width='65%'}
+knitr::include_graphics("rectzone.png")
+```
+
+## $n$-rectangle inconsistency index
+
+- First rectangle: bounded by largest/smallest $x$ and $y$ values. (same as $I_{R1}$) 
+- $n$th rectangle: bounded by the $n$-th largest/smallest $x$ and $y$ values.
+- Count number $s(i)$ of called balls inside rectangles.
+- $I_{Rn} = \frac{s(1) + s(2) + \cdots + s(n)}{\text{total number of called balls}}$
+- Usually $n = 10$ is plenty.
+
+```{r echo=FALSE, fig.align='center', out.width='50%'}
+knitr::include_graphics("nrectzone.png")
+```
+
+## $n$-rectangle inconsistency index: Example
+
+$$
+I_{R10} = \frac{(2+13)+(0+10)+(0+6)+(0+1)}{110} \approx 0.29.
+$$
+
+```{r echo=FALSE, fig.align='center', out.width='70%'}
+knitr::include_graphics("nrectzone.png")
+```
+
+## Convex-hull inconsistency index
+
+- Established strike zone: *Convex hull* of strikes.
+- Balls in the established strike zone are inconsistent.
+- $I_{CH} = \frac{\text{number of inconsistent balls}}{\text{total number of called balls}} = \frac{5+1}{118} \approx 0.051$
+- Similar limitations as $I_{R1}$
+
+```{r echo=FALSE, fig.align='center', out.width='60%'}
+knitr::include_graphics("chullzone.png")
+```
+
+## $\alpha$-convex hull inconsistency index
+
+- Called-ball region: *alpha-convex hull* of balls.
+- "Punch out" circles of some chosen radius $\alpha$ (we'll use $\alpha = 0.7$).
+- $I_{ACH} = \frac{n_La_L + n_Ra_R}{n_L+n_R}$, where $a_L$ and $a_R$ are the areas of the overlap.
+
+```{r echo=FALSE, fig.align='center', out.width='70%'}
+knitr::include_graphics("achullzone.png")
+```
+
+# Measuring Accuracy
+
+## Rule-book accuracy
+
+## The consensus zone
+
+## Consensus zone accuracy
+
+## Umpire tendencies
+
+## Application to segregation measurements
+
+# Some conclusions
+
 
 
 
