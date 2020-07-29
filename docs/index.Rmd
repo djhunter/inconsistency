@@ -15,7 +15,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-- [Slides for 8/5/2020 JSM Talk](umpire_jsm2020.Rmd)
+- [Slides for 8/5/2020 JSM Talk](umpire_jsm2020.html)
 - [Paper in Journal of Quantitative Analysis in Sports](https://doi.org/10.1515/jqas-2018-0061)
 - [GitHub repository of all code and data](https://github.com/djhunter/inconsistency)
 
