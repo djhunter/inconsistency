@@ -28,6 +28,10 @@ output:
 
 # Introduction
 
+## These slides are available online
+
+HTML Slides and related information can be found at: https://djhunter.github.io/inconsistency/
+
 ##  {data-background="allpitches.png" data-background-size="contain"}
 
 ## Consistency vs. Accuracy
@@ -43,6 +47,81 @@ output:
 ```{r echo=FALSE, fig.align='center', out.width='100%'}
 knitr::include_graphics("allpitchessmall.png")
 ```
+
+# Measuring Accuracy
+
+## What shape is the strike zone?
+
+- *Rulebook (definition):* A right pentagonal prism over home plate.
+    - Bottom and top depend on height of batter.
+    - Strike if any part of the ball passes through any part of the zone.
+- *Proxy rulebook:* The rectangular front of the rulebook zone.
+- *Rulebook (judgment):* "... legal pitch when so called by the umpire."
+- *Consensus:* The planar region above the front of the plate that has historically been called.
+    - Different for left/right hand batters.
+    - Varies from year to year.
+    - Rounded (perhaps to account for "backdoor" strikes?)
+    
+## Consensus zone by kernel density estimation {data-transition="slide-in fade-out"}
+
+- **Not** a spray chart. 
+- Border should be curve where ball and strike are equally-likely to be called.
+
+Let $s(x,y)$ be the two-dimensional PDF describing the distribution of called strikes in the plane (i.e., $s(x,y)$ gives the density of the probability
+that a called pitch will cross the plate at location $(x,y)$, given that the pitch is called a strike). Compute a KDE $\hat{s}(x,y)$ using all 2017 called strikes, and another KDE  $\hat{c}(x,y)$ for all called pitches. Then by Bayes' theorem, 
+$$
+\hat{f}(x,y) = \frac{\hat{p} \cdot \hat{s}(x,y)}{\hat{c}(x,y)},
+$$
+where $\hat{p}$ is the proportion of called pitches that are strikes. The 50\% contour of $\hat{f}(x,y)$ will then be the border of the consensus zone.
+
+## Consensus zone by kernel density estimation {data-transition="fade-in slide-out"}
+
+- **Not** a spray chart. 
+- Border should be curve where ball and strike are *equally-likely* to be called.
+
+Let $s(x,y)$ be the two-dimensional PDF describing the distribution of called strikes in the plane (i.e., $s(x,y)$ gives the density of the probability
+that a called pitch will cross the plate at location $(x,y)$, given that the pitch is called a strike). Compute a KDE $\hat{s}(x,y)$ using all 2017 called strikes, and another KDE  $\hat{c}(x,y)$ for all called pitches. Then by Bayes' theorem, 
+$$
+\hat{f}(x,y) = \frac{\hat{p} \cdot \hat{s}(x,y)}{\hat{c}(x,y)},
+$$
+where $\hat{p}$ is the proportion of called pitches that are strikes. The *50\% contour* of $\hat{f}(x,y)$ will then be the border of the consensus zone.
+
+## Consensus zones and choropleth maps
+
+- Example [Roegele]. Shaded squares are where probability of a strike call is greater than 50%.
+- 50\% contour of $\hat{f}(x,y)$ gives a smooth estimate.
+
+```{r echo=FALSE, fig.align='center', out.width='70%'}
+knitr::include_graphics("consensuszones.png")
+```
+
+## Application to segregation measures
+
+- $y = \hat{f}(x,y)$ is a surface, and $\nabla \hat{f}$ can measure the extent of segregation.
+- *Segregation Surfaces*, Hunter/Warioba, Mathematics Magazine, to appear.
+
+```{r echo=FALSE, fig.align='center', out.width='50%'}
+knitr::include_graphics("baltimore.png")
+```
+
+## Umpire accuracy
+
+- Using the proxy rulebook zone (rectangle), the best umpires are about 91% accurate.
+- Using the consensus zone, the best umpires are about 95% accurate.
+- Measured on all umpires, the two accuracy measurements are not strongly correlated ($r \approx 0.4$)
+
+## Umpire tendencies
+
+- Compute 50% contours of $\hat{f}$ for individual umpires.
+- Can compute area (zone size), and observe shape differences.
+- Symmetric difference with consensus zone measures conformity.
+
+```{r echo=FALSE, fig.align='center', out.width='100%'}
+knitr::include_graphics("zoneshapes.png")
+```
+
+
+
 
 # Measuring Inconsistency
 
@@ -109,7 +188,7 @@ knitr::include_graphics("chullzone.png")
 
 ## $\alpha$-convex hull inconsistency index
 
-- Called-ball region: *alpha-convex hull* of balls.
+- Called-ball region: *alpha-convex hull* of balls. [Rodríguez-Casal]
 - "Punch out" circles of some chosen radius $\alpha$ (we'll use $\alpha = 0.7$).
 - $I_{ACH} = \frac{n_La_L + n_Ra_R}{n_L+n_R}$, where $a_L$ and $a_R$ are the areas of the overlap.
 
@@ -117,23 +196,39 @@ knitr::include_graphics("chullzone.png")
 knitr::include_graphics("achullzone.png")
 ```
 
-# Measuring Accuracy
-
-## Rule-book accuracy
-
-## The consensus zone
-
-## Consensus zone accuracy
-
-## Umpire tendencies
-
-## Application to segregation measurements
 
 # Some conclusions
 
+## Correlations of measures on 2017 umpires
 
+<div class="column-left">
+- Inconsistency measures: $I_{R1}$, $I_{R10}$, $I_{CH}$, $I_{ACH}$
+- Accuracy measures: $A_C$, $A_R$
+- Symmetric difference with consensus zone $D_S$
+- Zone size $S$
+- Strikeout and walk rate $r_K$, $r_W$
+</div>
 
+<div class="column-right">
+```{r echo=FALSE, fig.align='center', out.width='100%'}
+knitr::include_graphics("cormatrix.png")
+```
+</div>
 
+## Principal component analysis
+
+- First two components PC1 and PC2 account for 68% of variation.
+- PC1 dominated by accuracy measures (positive) and inconsistency measures (negative).
+    - *Strike zone quality*
+- PC2 dominated by walk rate (negative) and strikeout rate and zone size (positive).
+    - *Pitcher friendliness*
+
+## {data-background="umpscatterpca.png" data-background-size="contain"}
+
+## Data and source code
+
+For reproducibility, data and R code used for the analysis and figures in this paper are available at:
+https://github.com/djhunter/inconsistency
 
 
 

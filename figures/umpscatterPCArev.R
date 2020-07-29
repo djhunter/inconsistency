@@ -35,7 +35,10 @@ umpscat2 <- ggplot(usdf, aes(x=szq, y=pf, label=umpname))+
   theme_minimal() +
   theme(axis.text=element_text(size=18), axis.title=element_text(size=24)) 
 
+# for paper:
 ggsave("figures/umpscatter2.pdf", plot = umpscat2, width = 18, height = 26, dpi = 300)
+# for slides:
+ggsave("slides/umpscatterpca.png", plot = umpscat2, width = 1920/72, height = 1080/72, units = "in", dpi=72)
 
 # with(regularUmps17, cor(accCZ, aiR10 + aiACH7)) # -0.58
 # summary(pca1) # PC1 and PC2 account for 68% of the variation
