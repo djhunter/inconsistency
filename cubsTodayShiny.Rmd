@@ -1,0 +1,295 @@
+---
+output: html_document
+runtime: shiny
+---
+
+<style> div.main-container { max-width: 1566px; } </style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(knitr)
+library(lubridate)
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(MASS)
+library(gridExtra)
+library(alphahull)
+library(sp)
+
+# The baseballr package wasn't working, so use the source code:
+source('../baseballr/R/get_pbp_mlb.R')
+source('../baseballr/R/get_game_pks_mlb.R')
+attach("../baseballr/data/stats_api_live_empty_df.rda")
+dog <- today()
+czonepoly <- readRDS("../conzonepoly18.Rda")
+```
+
+```{r, echo=FALSE, warning=FALSE}
+pks <- get_game_pks_mlb(dog)
+gamenum <- which(pks$teams.away.team.name == "Chicago Cubs" | pks$teams.home.team.name == "Chicago Cubs")
+
+# gamedata <- get_pbp_mlb(pks$game_pk[gamenum]) 
+# modify get_php_mlb to fail gracefully when no plays exist
+game_pk <- pks$game_pk[gamenum]
+  api_call <- paste0("http://statsapi.mlb.com/api/v1.1/game/", game_pk, "/feed/live")
+  payload <- jsonlite::fromJSON(api_call, flatten = TRUE)
+  plays <- payload$liveData$plays$allPlays$playEvents %>% bind_rows()
+if (nrow(plays) > 0)
+{
+  at_bats <- payload$liveData$plays$allPlays
+  current <- payload$liveData$plays$currentPlay
+  game_status <- payload$gameData$status$abstractGameState
+  home_team <- payload$gameData$teams$home$name
+  home_level <- payload$gameData$teams$home$sport
+  home_league <- payload$gameData$teams$home$league
+  away_team <- payload$gameData$teams$away$name
+  away_level <- payload$gameData$teams$away$sport
+  away_league <- payload$gameData$teams$away$league
+  list_columns <- lapply(at_bats, function(x) class(x)) %>%
+    dplyr::bind_rows(.id = "variable") %>%
+    tidyr::gather(key, value) %>%
+    dplyr::filter(value == "list") %>%
+    dplyr::pull(key)
+  at_bats <- at_bats %>%
+    dplyr::select(-c(one_of(list_columns)))
+  pbp <- plays %>%
+    dplyr::left_join(at_bats, by = c("endTime" = "playEndTime"))
+  pbp <- pbp %>%
+    tidyr::fill(atBatIndex:matchup.splits.menOnBase, .direction = "up") %>%
+    dplyr::mutate(game_pk = game_pk,
+                  game_date = substr(payload$gameData$datetime$dateTime, 1, 10)) %>%
+    dplyr::select(game_pk, game_date, everything())
+  pbp <- pbp %>%
+    dplyr::mutate(matchup.batter.fullName =
+                    factor(matchup.batter.fullName),
+                  matchup.pitcher.fullName =
+                    factor(matchup.pitcher.fullName),
+                  atBatIndex = factor(atBatIndex)
+    ) %>%
+    dplyr::mutate(home_team = home_team,
+                  home_level_id = home_level$id,
+                  home_level_name = home_level$name,
+                  home_parentOrg_id = payload$gameData$teams$home$parentOrgId,
+                  home_parentOrg_name = payload$gameData$teams$home$parentOrgName,
+                  home_league_id = home_league$id,
+                  home_league_name = home_league$name,
+                  away_team = away_team,
+                  away_level_id = away_level$id,
+                  away_level_name = away_level$name,
+                  away_parentOrg_id = payload$gameData$teams$away$parentOrgId,
+                  away_parentOrg_name = payload$gameData$teams$away$parentOrgName,
+                  away_league_id = away_league$id,
+                  away_league_name = away_league$name,
+                  batting_team = factor(ifelse(about.halfInning == "bottom",
+                                               home_team,
+                                               away_team)),
+                  fielding_team = factor(ifelse(about.halfInning == "bottom",
+                                                away_team,
+                                                home_team)))
+  pbp <- pbp %>%
+    dplyr::arrange(desc(atBatIndex), desc(pitchNumber))
+  pbp <- pbp %>%
+    dplyr::group_by(atBatIndex) %>%
+    dplyr::mutate(last.pitch.of.ab =
+                    ifelse(pitchNumber == max(pitchNumber), "true", "false"),
+                  last.pitch.of.ab = factor(last.pitch.of.ab)) %>%
+    ungroup()
+  pbp <- dplyr::bind_rows(stats_api_live_empty_df, pbp)
+  check_home_level <- pbp %>%
+    dplyr::distinct(home_level_id) %>%
+    dplyr::pull()
+  gamedata <- pbp %>%
+    dplyr::rename(count.balls.start = count.balls.x,
+                  count.strikes.start = count.strikes.x,
+                  count.outs.start = count.outs.x,
+                  count.balls.end = count.balls.y,
+                  count.strikes.end = count.strikes.y,
+                  count.outs.end = count.outs.y)
+}
+```
+
+## `r pks$teams.away.team.name[gamenum]` at `r pks$teams.home.team.name[gamenum]`, `r dog`
+
+The red curve is a probabilistic estimate of the established strike zone, based on the sample of pitches called so far.  The gray curve is the 2018 consensus strike zone. (Reload to refresh to most current live data.)
+
+```{r, echo=FALSE, warning=FALSE, fig.width=8, out.width="100%"}
+if(nrow(plays)>0) 
+{
+calledPitches <- gamedata %>%
+  filter(details.code %in% c("B", "*B", "C")) %>%
+  transmute(px = pitchData.coordinates.pX, 
+            pz = pitchData.coordinates.pZ,
+            des = details.description,
+            stand = matchup.batSide.code) %>%
+  filter(!(is.na(px) | is.na(pz)))
+npitch <- nrow(calledPitches)
+    
+balls <- calledPitches[calledPitches$des=="Ball" | calledPitches$des=="Ball In Dirt",
+                         c("px", "pz", "stand")]
+strikes <- calledPitches[calledPitches$des=="Called Strike", c("px", "pz", "stand")]
+    
+stk <- list(L=tibble(), R=tibble())
+bll <- list(L=tibble(), R=tibble())
+cp <- list(L=tibble(), R=tibble())
+stkKDE <- list(L=list(), R=list())
+cpKDE <- list(L=list(), R=list())
+czKDE <- list(L=list(), R=list())
+szcontour <- list(L=list(), R=list())
+szcontourdf <- list(L=data.frame(), R=data.frame())
+for(s in c("L", "R")) {
+  stk[[s]] <- strikes[strikes$stand==s,c("px","pz")]
+  bll[[s]] <- balls[balls$stand==s,c("px","pz")]
+  cp[[s]] <- calledPitches[calledPitches$stand==s,c("px","pz")]
+  stkKDE[[s]] <- kde2d(stk[[s]]$px, stk[[s]]$pz, n=200, lims = c(-2,2,0,5))
+  cpKDE[[s]] <- kde2d(cp[[s]]$px, cp[[s]]$pz, n=200, lims = c(-2,2,0,5))
+  czKDE[[s]] <- stkKDE[[s]]
+  czKDE[[s]]$z <- czKDE[[s]]$z/cpKDE[[s]]$z*nrow(stk$L)/nrow(cp$L)
+  
+  szcontour[[s]] <- contourLines(czKDE[[s]], levels=0.5)
+  szcontourdf[[s]] <- data.frame(px = szcontour[[s]][[1]]$x, pz = szcontour[[s]][[1]]$y)
+}
+    
+strikePlot <- list(L=list(), R=list())
+   
+s <- "L"
+strikePlot[[s]] <- ggplot() + 
+                     geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="red3") +
+		     geom_path(data=czonepoly[[s]], aes(x=px, y=pz), color="gray") +
+                     geom_point(data=bll[[s]], aes(x=px,y=pz), alpha=0.3, color="blue", size=3, stroke=1) +
+                     geom_point(data=stk[[s]], aes(x=px,y=pz), alpha=0.3, color="red3", size=3, stroke=1, shape=23, fill="red3") +
+                     coord_fixed(xlim=c(-2,2), ylim=c(0,5)) + 
+                     theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
+                     ggtitle("vs. left-handed batters")
+s <- "R"
+strikePlot[[s]] <- ggplot() + 
+                     geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="red3") +
+		     geom_path(data=czonepoly[[s]], aes(x=px, y=pz), color="gray") +
+                     geom_point(data=bll[[s]], aes(x=px,y=pz), alpha=0.3, color="blue", size=3, stroke=1) +
+                     geom_point(data=stk[[s]], aes(x=px,y=pz), alpha=0.3, color="red3", size=3, stroke=1, shape=23, fill="red3") +
+                     coord_fixed(xlim=c(-2,2), ylim=c(0,5)) + 
+                     theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
+                     ggtitle("vs. right-handed batters")
+grid.arrange(strikePlot$L, strikePlot$R, ncol=2)
+} else {
+	cat("It looks like mlb.com is not reporting any plays from this game yet.") }
+```
+
+## Umpire metrics
+
+```{r, include=FALSE}
+incR <- incCH <- incACH <- accRB <- accCZ <- NA
+if(nrow(plays)>0) {
+pitchdata <- gamedata %>%
+  filter(details.code %in% c("B", "*B", "C")) %>%
+  transmute(px = pitchData.coordinates.pX, 
+            pz = pitchData.coordinates.pZ,
+	    sz_top = pitchData.strikeZoneTop,
+	    sz_bot = pitchData.strikeZoneBottom,
+            des = details.description,
+            stand = matchup.batSide.code) %>%
+  filter(!(is.na(px) | is.na(pz)))
+
+layers <- 10
+  # normalize up/down locations based on height of batter. Zone goes from 1.5 to 3.5.
+  pitchdata$pz <- 2.0*(pitchdata$pz-pitchdata$sz_top)/(pitchdata$sz_top-pitchdata$sz_bot)+3.5
+  Lpitchdata <- subset(pitchdata, stand=="L")
+  Rpitchdata <- subset(pitchdata, stand=="R")
+  Lballs <- Lpitchdata[Lpitchdata$des=="Ball" | Lpitchdata$des=="Ball In Dirt",c("px","pz")]
+  Lstrikes <- Lpitchdata[Lpitchdata$des=="Called Strike",c("px","pz")]
+  Rballs <- Rpitchdata[Rpitchdata$des=="Ball" | Rpitchdata$des=="Ball In Dirt",c("px","pz")]
+  Rstrikes <- Rpitchdata[Rpitchdata$des=="Called Strike",c("px","pz")]
+  Lballs <- Lballs[!is.na(Lballs[,1]),]
+  Rballs <- Rballs[!is.na(Rballs[,1]),]
+  Lstrikes <- Lstrikes[!is.na(Lstrikes[,1]),]
+  Rstrikes <- Rstrikes[!is.na(Rstrikes[,1]),]
+  llay <- min(layers, nrow(Lstrikes) %/% 2) # can't have more layers than (number of strikes)/2
+  rlay <- min(layers, nrow(Rstrikes) %/% 2) #
+  xlhh <- sort(Lstrikes$px)
+  xrhh <- sort(Rstrikes$px)
+  xmin_l <- xlhh[1:llay]
+  xmin_r <- xrhh[1:rlay]
+  xmax_l <- xlhh[length(xlhh):(length(xlhh)-llay+1)]
+  xmax_r <- xrhh[length(xrhh):(length(xrhh)-rlay+1)]
+  ylhh <- sort(Lstrikes$pz)
+  yrhh <- sort(Rstrikes$pz)
+  ymin_l <- ylhh[1:llay]
+  ymin_r <- yrhh[1:rlay]
+  ymax_l <- ylhh[length(ylhh):(length(ylhh)-llay+1)]
+  ymax_r <- yrhh[length(yrhh):(length(yrhh)-rlay+1)]
+  incR <- (sum(sapply(seq_along(rlay), function(i) 
+    {Rballs$px < xmax_r[i] & Rballs$px > xmin_r[i] & Rballs$pz > ymin_r[i] & Rballs$pz < ymax_r[i]})) +
+          sum(sapply(seq_along(llay), function(i) 
+    {Lballs$px < xmax_l[i] & Lballs$px > xmin_l[i] & Lballs$pz > ymin_l[i] & Lballs$pz < ymax_l[i]}))) /
+            (nrow(Lballs) + nrow(Rballs))
+
+  emptyhull <- ahull(c(-100, -101, -100), c(0,0,1), alpha=10000) # kludge: not really empty but no data will ever be in it
+  if (nrow(Rstrikes)>2) RstrikeHull <- ahull(Rstrikes, alpha=10000) else RstrikeHull <- emptyhull
+  if (nrow(Lstrikes)>2) LstrikeHull <- ahull(Lstrikes, alpha=10000) else LstrikeHull <- emptyhull
+  badRballs <- sum(inahull(RstrikeHull, matrix(unlist(Rballs), ncol=2, byrow=FALSE)))
+  badLballs <- sum(inahull(LstrikeHull, matrix(unlist(Lballs), ncol=2, byrow=FALSE)))
+  incCH <- (badLballs+badRballs)/(nrow(Lballs)+nrow(Rballs))
+
+# set up samples for measuring overlap
+deltaxy <- 0.01
+taw <- 3 # test area width
+tah <- 3 # test area height
+pxsamp <- seq(-(taw/2), taw/2, by=deltaxy) # center test area at (0,2.5)
+pysamp <- seq(2.5-taw,2.5+taw,by=deltaxy)
+sampPts <- as.matrix(expand.grid(pxsamp, pysamp))
+
+alpha <- 0.7
+  if (nrow(Rstrikes)>2) RstrikeHull <- ahull(Rstrikes, alpha=10000) else RstrikeHull <- emptyhull
+  if (nrow(Lstrikes)>2) LstrikeHull <- ahull(Lstrikes, alpha=10000) else LstrikeHull <- emptyhull
+  if (nrow(Rballs)<=2) RballHull <- emptyhull else RballHull <- ahull(Rballs, alpha=alpha)
+  if (nrow(Lballs)<=2) LballHull <- emptyhull else LballHull <- ahull(Lballs, alpha=alpha)
+  
+  Lcalls <- nrow(Lstrikes)+nrow(Lballs)
+  Rcalls <- nrow(Rstrikes)+nrow(Rballs)
+  incACH <- (sum(inahull(LstrikeHull, sampPts) & inahull(LballHull, sampPts))*Lcalls +
+             sum(inahull(RstrikeHull, sampPts) & inahull(RballHull, sampPts))*Rcalls) *
+            (taw * tah) /
+            ((Lcalls + Rcalls)*nrow(sampPts))
+
+# Rule book zone: up/down pz's have been normalized to go from
+# 1.5 to 3.5. Width of baseball is 0.245 feet, so we add 1/2 of
+# a baseball's width to each edge. Width of plate is 17 inches.
+# (17/12)/2+0.245/2 = 0.8308333
+rbzoneX <- c(-0.8308333, 0.8308333, 0.8308333, -0.8308333)
+rbzoneY <- c(1.3775, 1.3775, 3.6225, 3.6225)
+
+  balls <- calledPitches[calledPitches$des=="Ball" | calledPitches$des=="Ball In Dirt",
+                         c("px", "pz", "stand")]
+  strikes <- calledPitches[calledPitches$des=="Called Strike", c("px", "pz", "stand")]
+  
+  accRB <- (sum(point.in.polygon(strikes$px, strikes$pz, rbzoneX, rbzoneY)) +
+              nrow(balls) - sum(point.in.polygon(balls$px, balls$pz, rbzoneX, rbzoneY))) /
+              nrow(calledPitches)
+  accCZ <- (sum(point.in.polygon(subset(strikes, stand == "L")$px,
+                                    subset(strikes, stand == "L")$pz,
+                                    czonepoly$L$px, czonepoly$L$pz)) +
+               sum(point.in.polygon(subset(strikes, stand == "R")$px,
+                                    subset(strikes, stand == "R")$pz,
+                                    czonepoly$R$px, czonepoly$R$pz)) +
+               nrow(balls) -
+               sum(point.in.polygon(subset(balls, stand == "L")$px,
+                                    subset(balls, stand == "L")$pz,
+                                    czonepoly$L$px, czonepoly$L$pz)) -
+               sum(point.in.polygon(subset(balls, stand == "R")$px,
+                                    subset(balls, stand == "R")$pz,
+                                    czonepoly$R$px, czonepoly$R$pz))) /
+              nrow(calledPitches)
+}
+```
+
+- Layered rectangular inconsistency index: `r incR`
+- Convex hull inconsistency index: `r incCH`
+- Alpha-convex hull inconsistency index: `r incACH`
+- Proxy rule book zone accuracy: `r accRB`
+- Consensus zone accuracy: `r accCZ`
+
+## What the numbers mean
+
+An inconsistency index of 0 means that the umpire has called a perfectly consistent zone. The league average for the rectangular metric is around 0.07 for an entire game. The other two inconsistency metrics have league averages around 0.02 to 0.04. Accuracy is measured as the percentage of correct calls, using the proxy rule book zone (the rectangle) and also the consensus zone (how strikes were typically called in 2018). For more information, please consult the paper [New metrics for evaluating home plate umpire consistency and accuracy](https://doi.org/10.1515/jqas-2018-0061), *Journal of Quantitative Analysis in Sports*.
+
