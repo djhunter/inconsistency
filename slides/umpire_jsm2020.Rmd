@@ -215,8 +215,11 @@ knitr::include_graphics("cormatrix.png")
 ```
 </div>
 
+## {data-background="umpscattercor.png"  data-background-size="contain"}
+
 ## Principal component analysis
 
+- Run `prcomp()` on $I_{R1}$, $I_{R10}$, $I_{CH}$, $I_{ACH}$, $A_C$, $A_R$, $D_S$, $S$, $r_K$, $r_W$.
 - First two components PC1 and PC2 account for 68% of variation.
 - PC1 dominated by accuracy measures (positive) and inconsistency measures (negative).
     - *Strike zone quality*

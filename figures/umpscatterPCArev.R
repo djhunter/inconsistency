@@ -22,6 +22,7 @@ umpscat1 <- ggplot(regularUmps17, aes(x=accCZ, y=(aiR10+aiACH7), label=umpname))
    theme_minimal() +
    theme(axis.text=element_text(size=18), axis.title=element_text(size=24)) + coord_flip() 
 ggsave("figures/umpscatter1.pdf", plot = umpscat1, width = 18, height = 26, dpi = 300)
+ggsave("slides/umpscattercor.png", plot = umpscat1, width = 1920/72, height = 1080/72, units = "in", dpi=72)
 
 usdf <- data.frame(szq = pca1$x[,1], pf = pca1$x[,2], umpname = rownames(pca1$x))
 
