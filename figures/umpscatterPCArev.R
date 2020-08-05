@@ -24,6 +24,18 @@ umpscat1 <- ggplot(regularUmps17, aes(x=accCZ, y=(aiR10+aiACH7), label=umpname))
 ggsave("figures/umpscatter1.pdf", plot = umpscat1, width = 18, height = 26, dpi = 300)
 ggsave("slides/umpscattercor.png", plot = umpscat1, width = 1920/72, height = 1080/72, units = "in", dpi=72)
 
+umpscatrvc <- ggplot(regularUmps17, aes(x=accCZ, y=accRB, label=umpname))+
+   geom_text_repel(aes(label=umpname), size=8) +
+   xlim(0.904,0.931)+
+   # geom_point(alpha=0) + 
+   geom_point(color = 'darkslateblue', size=3) + 
+#   geom_text(aes(label=umpname),hjust=0.5, vjust=0.0, size=7) + 
+   labs(x="Consensus Zone Accuracy", y = "Rule Book Accuracy")+
+   theme_minimal() +
+   theme(axis.text=element_text(size=18), axis.title=element_text(size=24)) + coord_flip() 
+ggsave("slides/umpscatterrvc.png", plot = umpscatrvc, width = 1920/72, height = 800/72, units = "in", dpi=72)
+
+
 usdf <- data.frame(szq = pca1$x[,1], pf = pca1$x[,2], umpname = rownames(pca1$x))
 
 umpscat2 <- ggplot(usdf, aes(x=szq, y=pf, label=umpname))+

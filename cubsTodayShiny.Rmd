@@ -36,7 +36,7 @@ game_pk <- pks$game_pk[gamenum]
   api_call <- paste0("http://statsapi.mlb.com/api/v1.1/game/", game_pk, "/feed/live")
   payload <- jsonlite::fromJSON(api_call, flatten = TRUE)
   plays <- payload$liveData$plays$allPlays$playEvents %>% bind_rows()
-if (nrow(plays) > 0)
+if (nrow(plays) > 3)
 {
   at_bats <- payload$liveData$plays$allPlays
   current <- payload$liveData$plays$currentPlay
@@ -115,7 +115,7 @@ if (nrow(plays) > 0)
 The red curve is a probabilistic estimate of the established strike zone, based on the sample of pitches called so far.  The gray curve is the 2018 consensus strike zone. (Reload to refresh to most current live data.)
 
 ```{r, echo=FALSE, warning=FALSE, fig.width=8, out.width="100%"}
-if(nrow(plays)>0) 
+if(nrow(plays)>3) 
 {
 calledPitches <- gamedata %>%
   filter(details.code %in% c("B", "*B", "C")) %>%
@@ -180,7 +180,7 @@ grid.arrange(strikePlot$L, strikePlot$R, ncol=2)
 
 ```{r, include=FALSE}
 incR <- incCH <- incACH <- accRB <- accCZ <- NA
-if(nrow(plays)>0) {
+if(nrow(plays)>3) {
 pitchdata <- gamedata %>%
   filter(details.code %in% c("B", "*B", "C")) %>%
   transmute(px = pitchData.coordinates.pX, 

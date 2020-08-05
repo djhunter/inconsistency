@@ -68,7 +68,7 @@ knitr::include_graphics("allpitchessmall.png")
 - Border should be curve where ball and strike are equally-likely to be called.
 
 Let $s(x,y)$ be the two-dimensional PDF describing the distribution of called strikes in the plane (i.e., $s(x,y)$ gives the density of the probability
-that a called pitch will cross the plate at location $(x,y)$, given that the pitch is called a strike). Compute a KDE $\hat{s}(x,y)$ using all 2017 called strikes, and another KDE  $\hat{c}(x,y)$ for all called pitches. Then by Bayes' theorem, 
+that a called pitch will cross the plate at location $(x,y)$, given that the pitch is called a strike). Compute a KDE $\hat{s}(x,y)$ using all 2017 called strikes, and another KDE  $\hat{c}(x,y)$ for all called pitches. Then by Bayes' rule, 
 $$
 \hat{f}(x,y) = \frac{\hat{p} \cdot \hat{s}(x,y)}{\hat{c}(x,y)},
 $$
@@ -109,6 +109,10 @@ knitr::include_graphics("baltimore.png")
 - Using the proxy rulebook zone (rectangle), the best umpires are about 91% accurate.
 - Using the consensus zone, the best umpires are about 95% accurate.
 - Measured on all umpires, the two accuracy measurements are not strongly correlated ($r \approx 0.4$)
+
+```{r echo=FALSE, fig.align='center', out.width='80%'}
+knitr::include_graphics("umpscatterrvc.png")
+```
 
 ## Umpire tendencies
 
@@ -230,8 +234,8 @@ knitr::include_graphics("cormatrix.png")
 
 ## Data and source code
 
-For reproducibility, data and R code used for the analysis and figures in this paper are available at:
+- For reproducibility, data and R code used for the analysis and figures in this paper are available at:
 https://github.com/djhunter/inconsistency
-
-
+- Dave's personal strike zone applet (Cubs only): http://stat.westmont.edu:3838/strikezone/
+- R Packages: `baseballr`, `pitchRx`, `alphahull`
 
