@@ -1,5 +1,5 @@
 # inconsistency
-R Scripts for measuring inconsistency in MLB ball and strike calls.
+R Scripts for measuring inconsistency in MLB ball and strike calls. For more details, see my paper in the Journal of Quantitative Analysis in Sports: [New metrics for evaluating home plate umpire consistency and accuracy](https://doi.org/10.1515/jqas-2018-0061).
 
 The file `pitches2017.Rda` contains pitch-tracking data for all pitches during the 2017 MLB season. This data was scraped from `http://gd2.mlb.com` using the `pitchRx` package. The scripts in the main directory of this repository will work if this file is read into the variable `pitches` and made into a `tibble`.
 
