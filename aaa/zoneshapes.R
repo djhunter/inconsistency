@@ -47,7 +47,7 @@ balls <- calledPitches[calledPitches$des=="Ball" | calledPitches$des=="Ball In D
                        c("px", "pz", "stand")]
 strikes <- calledPitches[calledPitches$des=="Called Strike", c("px", "pz", "stand")]
 AAAzone <- zoneContourPlot(balls, strikes, calledPitches) +
-  ggtitle("ABS Zone shape")
+  ggtitle("ABS Zone (AAA)")
 
 ## Now repeat for MLB season
 MLBcalledPitches <- readRDS("aaa/allMLBgames2023.rds") %>% # scraped in getMLBdata.R
@@ -63,40 +63,7 @@ MLBballs <- MLBcalledPitches[MLBcalledPitches$des=="Ball" | MLBcalledPitches$des
                        c("px", "pz", "stand")]
 MLBstrikes <- MLBcalledPitches[MLBcalledPitches$des=="Called Strike", c("px", "pz", "stand")]
 MLBzone <- zoneContourPlot(MLBballs, MLBstrikes, MLBcalledPitches) +
-  ggtitle("Human Umpire Zone shape")
+  ggtitle("Human Umpire Zone (MLB)")
 
-ggsave("docs/ABSvsMLBzones.png", plot = AAAzone + MLBzone, width = 24, height = 12, units = "cm")
+ggsave("docs/ABSvsMLBzones.png", plot = AAAzone + MLBzone, width = 16, height = 8, units = "cm")
 
-# initialize L/R variables
-stk <- list(L=tibble(), R=tibble())
-bll <- list(L=tibble(), R=tibble())
-cp <- list(L=tibble(), R=tibble())
-stkKDE <- list(L=list(), R=list())
-cpKDE <- list(L=list(), R=list())
-czKDE <- list(L=list(), R=list())
-szcontour <- list(L=list(), R=list())
-szcontourdf <- list(L=data.frame(), R=data.frame())
-for(s in c("L", "R")) {
-  stk[[s]] <- strikes[strikes$stand==s,c("px","pz")]
-  bll[[s]] <- balls[balls$stand==s,c("px","pz")]
-  cp[[s]] <- calledPitches[calledPitches$stand==s,c("px","pz")]
-  stkKDE[[s]] <- kde2d(stk[[s]]$px, stk[[s]]$pz, n=200, lims = c(-2,2,0,5))
-  cpKDE[[s]] <- kde2d(cp[[s]]$px, cp[[s]]$pz, n=200, lims = c(-2,2,0,5))
-  czKDE[[s]] <- stkKDE[[s]]
-  czKDE[[s]]$z <- czKDE[[s]]$z/cpKDE[[s]]$z*nrow(stk[[s]])/nrow(cp[[s]])
-
-  szcontour[[s]] <- contourLines(czKDE[[s]], levels=0.5)
-  szcontourdf[[s]] <- data.frame(px = szcontour[[s]][[1]]$x, pz = szcontour[[s]][[1]]$y)
-}
-
-zoneShape <- list(L=list(), R=list())
-for(s in c("L", "R")) {
-   zoneShape[[s]] <- ggplot() + 
-     geom_path(data=szcontourdf[[s]], aes(x=px, y=pz), color="black") +
-     coord_fixed(xlim=c(-1.5,1.5), ylim=c(1.0,4)) +
-     theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank())
-}
-
-# 
-# conzones <- grid.arrange(strikePlot$L, strikePlot$R, ballPlot$L, ballPlot$R, ncol=2)
-# ggsave("figures/consensus_zones.pdf", plot = conzones, width = 8, height = 8, dpi = 300)
