@@ -47,7 +47,7 @@ balls <- calledPitches[calledPitches$des=="Ball" | calledPitches$des=="Ball In D
                        c("px", "pz", "stand")]
 strikes <- calledPitches[calledPitches$des=="Called Strike", c("px", "pz", "stand")]
 AAAzone <- zoneContourPlot(balls, strikes, calledPitches) +
-  ggtitle("ABS Zone shape, 2023 AAA Season (so far)")
+  ggtitle("ABS Zone shape")
 
 ## Now repeat for MLB season
 MLBcalledPitches <- readRDS("aaa/allMLBgames2023.rds") %>% # scraped in getMLBdata.R
@@ -63,7 +63,7 @@ MLBballs <- MLBcalledPitches[MLBcalledPitches$des=="Ball" | MLBcalledPitches$des
                        c("px", "pz", "stand")]
 MLBstrikes <- MLBcalledPitches[MLBcalledPitches$des=="Called Strike", c("px", "pz", "stand")]
 MLBzone <- zoneContourPlot(MLBballs, MLBstrikes, MLBcalledPitches) +
-  ggtitle("Umpire Zone shape, 2023 MLB Season (so far)")
+  ggtitle("Human Umpire Zone shape")
 
 ggsave("docs/ABSvsMLBzones.png", plot = AAAzone + MLBzone, width = 24, height = 12, units = "cm")
 
