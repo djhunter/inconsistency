@@ -54,6 +54,16 @@ for(s in c("L", "R")) {
 require(gridExtra)
 grid.arrange(zoneShape$L, zoneShape$R)
 
+calledPitches %>% 
+  filter(des != "Ball In Dirt") %>%
+  ggplot(aes(x = px, y = pz, color = des)) +
+  coord_fixed(xlim=c(-2,2), ylim=c(0,5)) + 
+  geom_point(size = 4, shape = 1, alpha = 0.5) +
+  theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
+  guides(color = guide_legend(title = "Pitch Result")) +
+  scale_color_manual(values = c("#355E3B", "#AA0000"))
+ggsave("allAAAcalls.png", width = 10, height = 10, units = "cm")  
+
 # 
 # conzones <- grid.arrange(strikePlot$L, strikePlot$R, ballPlot$L, ballPlot$R, ncol=2)
 # ggsave("figures/consensus_zones.pdf", plot = conzones, width = 8, height = 8, dpi = 300)
