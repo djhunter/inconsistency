@@ -62,7 +62,7 @@ calledPitches %>%
   theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
   guides(color = guide_legend(title = "Pitch Result")) +
   scale_color_manual(values = c("#355E3B", "#AA0000"))
-ggsave("allAAAcalls.png", width = 10, height = 10, units = "cm")  
+ggsave("docs/allAAAcalls.png", width = 12, height = 10, units = "cm")  
 
 # 
 # conzones <- grid.arrange(strikePlot$L, strikePlot$R, ballPlot$L, ballPlot$R, ncol=2)
