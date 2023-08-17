@@ -1,5 +1,4 @@
 library(MASS)
-library(baseballr)
 library(tidyverse)
 library(patchwork)
 all_game_pbp_list <- readRDS("aaa/allAAAgames2023.rds") # scraped in getAAAdata.R
@@ -80,9 +79,9 @@ cs_calledPitches <- cs_game_pbp %>%
               (pitchData.strikeZoneTop - pitchData.strikeZoneBottom) + 3.5,
             des = details.description,
             stand = matchup.batSide.code) 
-cs_balls <- calledPitches[calledPitches$des=="Ball" | calledPitches$des=="Ball In Dirt",
+cs_balls <- cs_calledPitches[cs_calledPitches$des=="Ball" | cs_calledPitches$des=="Ball In Dirt",
                        c("px", "pz", "stand")]
-cs_strikes <- calledPitches[calledPitches$des=="Called Strike", c("px", "pz", "stand")]
+cs_strikes <- cs_calledPitches[cs_calledPitches$des=="Called Strike", c("px", "pz", "stand")]
 AAACSzonedf <- zoneContourDF(cs_balls, cs_strikes, cs_calledPitches) %>%
   mutate(System = "Challenge")
 allAAAzonedf <- AAAABSzonedf %>%
@@ -92,11 +91,8 @@ ABSvsCS <- ggplot(allAAAzonedf) +
   geom_path(aes(x = px, y = pz, color = System)) +
   coord_fixed(xlim=c(-1.5,1.5), ylim=c(1.0,4)) +
   theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
-  ggtitle("ABS vs. Challenge System")
+  scale_color_viridis_d(end = 0.7) +
+  ggtitle("ABS vs. Challenge System (AAA)")
+ggsave("docs/ABSvsCS.png", plot = ABSvsCS, width = 12, height = 10, units = "cm")  
 
-AAAzone <- ggplot(AAACSzonedf) +
-  geom_path(aes(x=px, y=pz), color="black") +
-  coord_fixed(xlim=c(-1.5,1.5), ylim=c(1.0,4)) +
-  theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
-  ggtitle("ABS Zone (AAA)")
 
