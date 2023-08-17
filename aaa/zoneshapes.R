@@ -24,7 +24,8 @@ allAAAcalls <- calledPitches %>%
   geom_point(size = 4, shape = 1, alpha = 0.5) +
   theme_bw() + theme(axis.title.x=element_blank(),axis.title.y=element_blank()) +
   guides(color = guide_legend(title = "Pitch Result")) +
-  scale_color_manual(values = c("#355E3B", "#AA0000"))
+#  scale_color_manual(values = c("#355E3B", "#AA0000"))
+  scale_color_viridis_d(begin = 0.2, end = 0.6, direction = -1)
 ggsave("docs/allAAAcalls.png", plot = allAAAcalls, width = 12, height = 10, units = "cm")  
 
 ## Function to make contours for decision boundaries
