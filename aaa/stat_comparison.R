@@ -18,7 +18,6 @@ all_game_pbp %>%
 chisq.test(pitchcallsbysystem$`Pitch Call`, pitchcallsbysystem$System)
 prop.test(t(table(pitchcallsbysystem)))
 
-summary(lm(as.numeric(`Pitch Call`) ~ System, data = pitchcallsbysystem))
 summary(glm(`Pitch Call` ~ System, data = pitchcallsbysystem, family = "binomial"))
 
 all_game_pbp %>%

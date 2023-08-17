@@ -2,7 +2,8 @@ library(baseballr)
 library(tidyverse)
 
 first_day_of_season <- ymd("2023-03-30")
-game_dates <- seq(from = first_day_of_season, to = today(), by = "day")
+last_day <- ymd("2023-08-16")
+game_dates <- seq(from = first_day_of_season, to = last_day, by = "day")
 
 game_pks <- map(game_dates, get_game_pks_mlb, level_ids = 1) %>%
   bind_rows()
